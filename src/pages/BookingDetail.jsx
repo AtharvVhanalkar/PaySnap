@@ -4,11 +4,20 @@ import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { previewPhotos } from '../data/mockData';
-import { AlertTriangle, Lock, Unlock, Check, Camera, Shield, Download, CheckCircle, X } from 'lucide-react';
+import { AlertTriangle, Lock, Unlock, Check, Camera, Shield, Download, CheckCircle, X, AlertCircle } from 'lucide-react';
 
 export default function BookingDetail() {
   const { bookingId } = useParams();
-  const { getBooking, getPhotographer, getPhasesForBooking, submitPaymentProof, cancelBooking, formatINR } = useApp();
+  const {
+    getBooking,
+    getPhotographer,
+    getPhasesForBooking,
+    submitPaymentProof,
+    cancelBooking,
+    isPhaseOverdue,
+    hasOverduePhase,
+    formatINR,
+  } = useApp();
 
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [payModalPhase, setPayModalPhase] = useState(null);
@@ -42,8 +51,11 @@ export default function BookingDetail() {
 
   const remainingBalance = Math.max(0, booking.deal_price - totalPaid);
 
-  // Check if Phase 3 is approved (unlocks full gallery)
-  const isPhase3Approved = phases.find((p) => p.phase_number === 3)?.status === 'approved';
+  // Check if final phase is approved (unlocks full gallery)
+  const isFinalPhaseApproved = phases.length > 0 && phases[phases.length - 1].status === 'approved';
+
+  // Check if any phase is overdue
+  const isBookingOverdue = hasOverduePhase(booking.id);
 
   // Calculate potential refund
   const refundableAmount = Math.max(0, totalPaid - booking.booking_fee);
@@ -75,6 +87,37 @@ export default function BookingDetail() {
           <span className="text-gray-800">Booking #{booking.id}</span>
         </div>
 
+        {/* Action Required Banner if overdue */}
+        {isBookingOverdue && (
+          <div className="bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-3xl p-6 sm:p-7 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                <AlertCircle className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-white text-red-700 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-2xs">
+                    Action Required
+                  </span>
+                  <h3 className="font-black text-base sm:text-lg">Milestone Payment Overdue</h3>
+                </div>
+                <p className="text-xs text-rose-100 mt-1 max-w-xl leading-relaxed">
+                  Your milestone payment date has passed without payment submission. Please complete the pending milestone to avoid delivery holds.
+                </p>
+              </div>
+            </div>
+            {phases.find(p => isPhaseOverdue(p)) && (
+              <button
+                type="button"
+                onClick={() => setPayModalPhase(phases.find(p => isPhaseOverdue(p)))}
+                className="px-5 py-2.5 bg-white text-rose-700 hover:bg-rose-50 text-xs font-black rounded-xl shadow-md transition cursor-pointer whitespace-nowrap self-stretch sm:self-auto text-center"
+              >
+                Pay Overdue Milestone →
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Booking Summary Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-gray-100">
@@ -83,7 +126,11 @@ export default function BookingDetail() {
                 <h1 className="text-xl sm:text-2xl font-black text-gray-900">
                   {photographer?.shop_name}
                 </h1>
-                <StatusBadge status={booking.status === 'cancelled' ? 'cancelled' : isPhase3Approved ? 'completed' : 'active'} />
+                {isBookingOverdue ? (
+                  <StatusBadge status="action_required" />
+                ) : (
+                  <StatusBadge status={booking.status === 'cancelled' ? 'cancelled' : isFinalPhaseApproved ? 'completed' : 'active'} />
+                )}
               </div>
               <p className="text-xs text-gray-500 mt-1">
                 Owner: <strong>{photographer?.owner_name}</strong> · Venue: <strong>{booking.venue}</strong>
@@ -116,11 +163,11 @@ export default function BookingDetail() {
           )}
         </div>
 
-        {/* 3-Phase Milestone Tracker */}
+        {/* Milestone Schedule Tracker */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">3-Phase Payment Schedule</h2>
+              <h2 className="text-lg font-bold text-gray-900">Milestone Payment Schedule ({phases.length} Phases)</h2>
               <p className="text-xs text-gray-500">Each milestone secures a stage of your wedding photography.</p>
             </div>
             <span className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
@@ -133,12 +180,15 @@ export default function BookingDetail() {
               const isApproved = phase.status === 'approved';
               const isSubmitted = phase.status === 'submitted';
               const isPending = phase.status === 'pending';
+              const isOverdue = isPhaseOverdue(phase);
 
               return (
                 <div
                   key={phase.id}
                   className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                    isApproved
+                    isOverdue
+                      ? 'border-red-300 bg-red-50/20 ring-2 ring-red-200'
+                      : isApproved
                       ? 'border-emerald-200 bg-emerald-50/30'
                       : isSubmitted
                       ? 'border-amber-200 bg-amber-50/40'
@@ -148,20 +198,32 @@ export default function BookingDetail() {
                   <div className="flex items-start gap-3">
                     <div
                       className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
-                        isApproved
+                        isOverdue
+                          ? 'bg-red-600 text-white'
+                          : isApproved
                           ? 'bg-emerald-600 text-white'
                           : isSubmitted
                           ? 'bg-amber-400 text-amber-950'
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
-                      {isApproved ? <Check className="w-4 h-4 mx-auto" /> : phase.phase_number}
+                      {isOverdue ? (
+                        <AlertCircle className="w-5 h-5 text-white" />
+                      ) : isApproved ? (
+                        <Check className="w-4 h-4 mx-auto" />
+                      ) : (
+                        phase.phase_number
+                      )}
                     </div>
 
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-extrabold text-sm text-gray-900">{phase.name}</h4>
-                        <StatusBadge status={phase.status} />
+                        {isOverdue ? (
+                          <StatusBadge status="action_required" />
+                        ) : (
+                          <StatusBadge status={phase.status} />
+                        )}
                         {isApproved && (
                           <span className="text-[10px] text-emerald-700 font-semibold hidden md:inline">
                             (Payment verified by gateway)
@@ -170,8 +232,14 @@ export default function BookingDetail() {
                       </div>
 
                       <p className="text-xs text-gray-500 mt-0.5">
-                        Due: {phase.due_date} {phase.paid_date && `· Paid on ${phase.paid_date}`}
+                        Due: <span className={isOverdue ? 'text-red-600 font-bold' : ''}>{phase.due_date}</span> {phase.paid_date && `· Paid on ${phase.paid_date}`}
                       </p>
+
+                      {isOverdue && (
+                        <p className="text-[11px] text-red-600 font-bold mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" /> Action Required: Payment date passed without payment or proof
+                        </p>
+                      )}
 
                       {isSubmitted && (
                         <p className="text-[11px] text-amber-800 font-medium mt-1">
@@ -186,13 +254,17 @@ export default function BookingDetail() {
                       {formatINR(phase.amount)}
                     </span>
 
-                    {/* Pay Button for Pending Phases */}
+                    {/* Pay Button for Pending/Overdue Phases */}
                     {isPending && booking.status !== 'cancelled' && (
                       <button
                         onClick={() => setPayModalPhase(phase)}
-                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs transition cursor-pointer"
+                        className={`px-4 py-2 rounded-xl text-xs font-bold shadow-xs transition cursor-pointer ${
+                          isOverdue
+                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                            : 'bg-rose-600 hover:bg-rose-700 text-white'
+                        }`}
                       >
-                        Pay Milestone →
+                        {isOverdue ? 'Pay Overdue Milestone →' : 'Pay Milestone →'}
                       </button>
                     )}
 
@@ -218,161 +290,115 @@ export default function BookingDetail() {
                   Customer Event Gallery & Demo Previews
                 </h2>
               </div>
-              <p className="text-xs text-gray-600 mt-1">
-                <strong>{booking.total_photos_uploaded || 1847} photos uploaded</strong> to studio cloud · <strong>10 demo previews shown</strong>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {isFinalPhaseApproved
+                  ? 'All deliverables unlocked! Download your full raw & edited collection.'
+                  : '10 watermarked demo previews available. Complete final milestone to unlock download.'}
               </p>
             </div>
 
-            {isPhase3Approved ? (
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full flex items-center gap-1.5">
-                <Unlock className="w-3.5 h-3.5" /> Full Resolution Gallery Unlocked
-              </span>
-            ) : (
-              <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5" /> Full Gallery Unlocks After Phase 3
-              </span>
-            )}
+            <div>
+              {isFinalPhaseApproved ? (
+                <button
+                  type="button"
+                  onClick={() => setDownloadNotice(true)}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                >
+                  <Download className="w-4 h-4" /> Download All (1,847 Photos)
+                </button>
+              ) : (
+                <span className="px-3 py-1 bg-amber-50 text-amber-800 rounded-lg text-xs font-bold border border-amber-200 flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5" /> Full Gallery Locked
+                </span>
+              )}
+            </div>
           </div>
 
-          {!isPhase3Approved && (
-            <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
-              <Shield className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
-              <div>
-                <strong>Watermarked Quality Previews:</strong> These 10 sample photos allow you to inspect color grading, focus, and capture quality. Right-click and downloads are disabled. Once you approve the final phase, all 1,847 photos will be instantly downloadable without watermark.
-              </div>
+          {downloadNotice && (
+            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-1.5">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>Starting high-speed ZIP download for all high-res photos...</span>
             </div>
           )}
 
           {/* 10 Watermarked Photos Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
             {previewPhotos.map((img, idx) => (
-              <div
-                key={idx}
-                onContextMenu={(e) => e.preventDefault()}
-                className="relative h-36 rounded-2xl overflow-hidden bg-gray-900 shadow-2xs group select-none"
-              >
-                {/* Photo: slightly blurred if Phase 3 unpaid */}
-                <img
-                  src={img}
-                  alt={`Preview ${idx + 1}`}
-                  draggable="false"
-                  className={`w-full h-full object-cover transition duration-300 ${
-                    !isPhase3Approved ? 'filter blur-[1.5px] opacity-90' : 'hover:scale-105'
-                  }`}
-                />
-
-                {/* CSS Watermark Overlay (Centered) if Phase 3 unpaid */}
-                {!isPhase3Approved && (
-                  <div className="absolute inset-0 flex items-center justify-center p-2 pointer-events-none">
-                    <div className="bg-black/60 backdrop-blur-xs px-2 py-1 rounded-md text-white text-[9px] font-black uppercase tracking-wider text-center border border-white/20 shadow-md">
-                      PREVIEW · {photographer?.shop_name || 'STUDIO'}
-                    </div>
+              <div key={idx} className="relative group rounded-2xl overflow-hidden h-32 border border-gray-200">
+                <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                {!isFinalPhaseApproved && (
+                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+                    <span className="text-[10px] font-black text-white/80 uppercase tracking-widest bg-black/50 px-2 py-0.5 rounded-sm">
+                      PREVIEW
+                    </span>
                   </div>
                 )}
-
-                {/* Number Badge */}
-                <span className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+                <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded font-bold">
                   #{idx + 1}
-                </span>
+                </div>
               </div>
             ))}
           </div>
-
-          {/* Full Resolution Gallery Status & Actions */}
-          <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-gray-500">
-              {isPhase3Approved ? (
-                <span className="text-emerald-700 font-bold flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-600" />
-                  <span>Complete raw & edited collection available for download</span>
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 text-amber-800">
-                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Remaining 1,837 high-res captures locked until Phase 3 final payment</span>
-                </span>
-              )}
-            </div>
-
-            {isPhase3Approved ? (
-              <button
-                onClick={() => setDownloadNotice(true)}
-                className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" /> Download All 1,847 Photos (ZIP)
-              </button>
-            ) : (
-              <button
-                disabled
-                className="w-full sm:w-auto px-5 py-2.5 bg-gray-100 text-gray-400 font-bold text-xs rounded-xl cursor-not-allowed flex items-center justify-center gap-1.5"
-              >
-                <Lock className="w-4 h-4" /> Download Locked (Pay Phase 3)
-              </button>
-            )}
-          </div>
-
-          {downloadNotice && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex justify-between items-center border border-emerald-200">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Simulated demo download: Your 18.4 GB wedding archive is downloading in background!</span>
-              </span>
-              <button onClick={() => setDownloadNotice(false)} className="p-1 hover:bg-emerald-100 rounded-lg cursor-pointer">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Section 10: Cancellation & Refund Policy Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">Cancellation & Refund Terms</h2>
-          <div className="p-4 rounded-2xl bg-gray-50 text-xs text-gray-600 space-y-2 leading-relaxed">
-            <p>
-              • <strong>Non-Refundable Booking Fee:</strong> A minimum booking fee of <strong>₹5,000</strong> is strictly retained upon cancellation to cover dates held and shoot preparation.
-            </p>
-            <p>
-              • <strong>Fair Refund Guarantee:</strong> All amounts paid beyond the non-refundable booking fee are 100% refunded to your original payment method within 7 business days.
-            </p>
-            <p className="font-semibold text-gray-800">
-              Current Calculation: Paid {formatINR(totalPaid)} - ₹5,000 non-refundable fee = <span className="text-emerald-600">{formatINR(refundableAmount)} refund</span> if cancelled now.
-            </p>
-          </div>
-
-          {booking.status !== 'cancelled' && (
-            <div className="pt-2 flex justify-end">
-              <button
-                onClick={() => setCancelModalOpen(true)}
-                className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 text-xs font-bold rounded-xl transition cursor-pointer"
-              >
-                Cancel Booking & Request Refund
-              </button>
+        {/* Section 10: Cancellation & Refund Option */}
+        {booking.status === 'active' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Need to cancel this booking?</h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Per Section 10 of the PaySnap Agreement, non-refundable booking fee is {formatINR(booking.booking_fee)}. Eligible refund: <strong>{formatINR(refundableAmount)}</strong>.
+              </p>
             </div>
-          )}
-        </div>
+            <button
+              type="button"
+              onClick={() => setCancelModalOpen(true)}
+              className="px-4 py-2 border border-red-300 text-red-600 hover:bg-red-50 text-xs font-bold rounded-xl transition cursor-pointer"
+            >
+              Cancel Booking
+            </button>
+          </div>
+        )}
       </main>
 
-      {/* Pay Milestone Modal */}
+      {/* Payment Proof Upload Modal */}
       {payModalPhase && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
-            <h3 className="text-lg font-extrabold text-gray-900">
-              Pay Milestone: {payModalPhase.name}
-            </h3>
-            <p className="text-xs text-gray-500">
-              Simulate gateway transfer of <strong>{formatINR(payModalPhase.amount)}</strong> to {photographer?.shop_name}.
-            </p>
-
-            <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100 text-xs">
-              <span className="text-gray-500 block">Milestone Amount</span>
-              <span className="text-2xl font-black text-rose-700">{formatINR(payModalPhase.amount)}</span>
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900">
+                Pay {payModalPhase.name}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setPayModalPhase(null)}
+                className="text-gray-400 hover:text-gray-600 font-bold"
+              >
+                ✕
+              </button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <label className="block font-bold text-gray-700 uppercase">Payment Simulation Method</label>
-              <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 font-mono text-gray-700">
-                UPI: priya@okhdfcbank (Auto-Verified)
+            <div className="p-4 bg-rose-50/70 rounded-2xl border border-rose-200 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-rose-800">Milestone Due</span>
+                <p className="text-xl font-black text-rose-950">{formatINR(payModalPhase.amount)}</p>
               </div>
+              <span className="text-xs font-semibold text-gray-600">Due: {payModalPhase.due_date}</span>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              Simulate instant UPI transfer or upload screenshot receipt. Payment settles directly with {photographer?.shop_name}.
+            </p>
+
+            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-center">
+              <div className="w-28 h-28 bg-white border border-gray-300 rounded-xl mx-auto flex items-center justify-center p-2 mb-2 shadow-xs">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=paysnap@okhdfcbank"
+                  alt="UPI QR"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <p className="text-[11px] text-gray-500">Scan QR to pay directly to studio</p>
             </div>
 
             <div className="flex gap-3 pt-2">
@@ -380,52 +406,56 @@ export default function BookingDetail() {
                 type="button"
                 disabled={isProcessingPayment}
                 onClick={handleSimulatePayment}
-                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
               >
-                {isProcessingPayment ? 'Processing Gateway...' : `Confirm & Pay ${formatINR(payModalPhase.amount)}`}
+                {isProcessingPayment ? 'Validating Payment...' : 'Simulate Payment & Submit Proof'}
               </button>
               <button
                 type="button"
                 onClick={() => setPayModalPhase(null)}
                 className="px-4 py-3 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200 cursor-pointer"
               >
-                Cancel
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Cancel Confirmation Modal */}
+      {/* Cancellation Confirmation Modal */}
       {cancelModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-            <h3 className="text-lg font-black text-gray-900">Cancel Wedding Booking?</h3>
+            <h3 className="text-lg font-bold text-gray-900">Confirm Booking Cancellation</h3>
             <p className="text-xs text-gray-600 leading-relaxed">
-              Are you sure you want to cancel your shoot with <strong>{photographer?.shop_name}</strong>?
+              Are you sure you want to cancel this booking with <strong>{photographer?.shop_name}</strong>?
             </p>
-
-            <div className="p-4 bg-red-50 rounded-2xl border border-red-200 text-xs text-red-950 space-y-1">
-              <p>Total Paid So Far: <strong>{formatINR(totalPaid)}</strong></p>
-              <p>Non-Refundable Booking Fee: <strong>-₹5,000</strong></p>
-              <p className="pt-1 border-t border-red-200 font-bold text-sm text-red-700">
-                Total Refund to be Processed: {formatINR(refundableAmount)}
-              </p>
+            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-xs space-y-1.5">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Total Paid so far:</span>
+                <span className="font-bold text-gray-900">{formatINR(totalPaid)}</span>
+              </div>
+              <div className="flex justify-between text-red-600">
+                <span>Non-refundable Booking Fee:</span>
+                <span className="font-bold">- {formatINR(booking.booking_fee)}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t border-gray-200 font-bold text-emerald-700 text-sm">
+                <span>Refund Processed to You:</span>
+                <span>{formatINR(refundableAmount)}</span>
+              </div>
             </div>
-
             <div className="flex gap-3 pt-2">
               <button
+                type="button"
                 onClick={handleConfirmCancel}
-                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+                className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl cursor-pointer"
               >
-                Yes, Cancel & Refund {formatINR(refundableAmount)}
+                Yes, Cancel & Refund
               </button>
               <button
+                type="button"
                 onClick={() => setCancelModalOpen(false)}
-                className="px-4 py-3 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200 cursor-pointer"
+                className="px-4 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200 cursor-pointer"
               >
                 Keep Booking
               </button>

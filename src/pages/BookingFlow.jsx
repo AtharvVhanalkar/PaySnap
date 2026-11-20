@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useApp } from '../context/AppContext';
-import { Check, Info, Lock, Loader2 } from 'lucide-react';
+import { Check, Info, Lock, Loader2, Plus, Trash2, Calendar, DollarSign, Sliders, AlertCircle } from 'lucide-react';
 
 export default function BookingFlow() {
   const { photographerId } = useParams();
@@ -27,6 +27,94 @@ export default function BookingFlow() {
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [newBookingId, setNewBookingId] = useState(null);
 
+  const selectedPkg = photographer?.packages.find((p) => p.id === selectedPkgId) || photographer?.packages[0];
+  const dealPrice = selectedPkg?.price || 95000;
+  const bookingFee = 5000;
+
+  // Customizable Phase Schedule state
+  const [phasesList, setPhasesList] = useState([
+    {
+      id: 1,
+      name: 'Phase 1: Advance Booking',
+      amount: Math.round(dealPrice * 0.3),
+      due_date: new Date().toISOString().slice(0, 10),
+    },
+    {
+      id: 2,
+      name: 'Phase 2: Pre-Event Payment',
+      amount: Math.round(dealPrice * 0.4),
+      due_date: '2026-12-20',
+    },
+    {
+      id: 3,
+      name: 'Phase 3: Final Delivery & Release',
+      amount: dealPrice - Math.round(dealPrice * 0.3) - Math.round(dealPrice * 0.4),
+      due_date: '2027-01-05',
+    },
+  ]);
+
+  // When package changes, recalculate default 3 phases if user hasn't heavily customized
+  const applyPresetPhases = (count) => {
+    if (count === 2) {
+      const half = Math.round(dealPrice * 0.5);
+      setPhasesList([
+        { id: 1, name: 'Phase 1: Advance Booking (50%)', amount: half, due_date: new Date().toISOString().slice(0, 10) },
+        { id: 2, name: 'Phase 2: Final Delivery (50%)', amount: dealPrice - half, due_date: '2027-01-05' },
+      ]);
+    } else if (count === 3) {
+      const p1 = Math.round(dealPrice * 0.3);
+      const p2 = Math.round(dealPrice * 0.4);
+      setPhasesList([
+        { id: 1, name: 'Phase 1: Advance Booking (30%)', amount: p1, due_date: new Date().toISOString().slice(0, 10) },
+        { id: 2, name: 'Phase 2: Pre-Event Payment (40%)', amount: p2, due_date: '2026-12-20' },
+        { id: 3, name: 'Phase 3: Final Delivery (30%)', amount: dealPrice - p1 - p2, due_date: '2027-01-05' },
+      ]);
+    } else if (count === 4) {
+      const q = Math.round(dealPrice * 0.25);
+      setPhasesList([
+        { id: 1, name: 'Phase 1: Booking Confirmation (25%)', amount: q, due_date: new Date().toISOString().slice(0, 10) },
+        { id: 2, name: 'Phase 2: Pre-Event Shoot (25%)', amount: q, due_date: '2026-12-15' },
+        { id: 3, name: 'Phase 3: Main Event Handover (25%)', amount: q, due_date: '2026-12-29' },
+        { id: 4, name: 'Phase 4: Final Album & Raw Delivery (25%)', amount: dealPrice - 3 * q, due_date: '2027-01-15' },
+      ]);
+    }
+  };
+
+  const handleUpdatePhase = (index, field, value) => {
+    setPhasesList((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: field === 'amount' ? Math.max(0, Number(value) || 0) : value,
+      };
+      return updated;
+    });
+  };
+
+  const handleAddPhase = () => {
+    const totalCurrent = phasesList.reduce((sum, p) => sum + p.amount, 0);
+    const diff = Math.max(0, dealPrice - totalCurrent);
+    const newPhaseNum = phasesList.length + 1;
+    setPhasesList((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        name: `Phase ${newPhaseNum}: Milestone Payment`,
+        amount: diff > 0 ? diff : 10000,
+        due_date: '2027-01-10',
+      },
+    ]);
+  };
+
+  const handleRemovePhase = (index) => {
+    if (phasesList.length <= 1) return;
+    setPhasesList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const totalPhasesAmount = phasesList.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+  const phaseDifference = dealPrice - totalPhasesAmount;
+  const phase1PayAmount = phasesList[0]?.amount || Math.round(dealPrice * 0.3);
+
   if (!photographer) {
     return (
       <div className="min-h-screen bg-[#fdf8f3] flex flex-col">
@@ -37,15 +125,6 @@ export default function BookingFlow() {
       </div>
     );
   }
-
-  const selectedPkg = photographer.packages.find((p) => p.id === selectedPkgId) || photographer.packages[0];
-  const dealPrice = selectedPkg.price;
-  const bookingFee = 5000;
-
-  // 3-Phase default breakdown: 30%, 40%, 30%
-  const phase1Amount = Math.round(dealPrice * 0.3);
-  const phase2Amount = Math.round(dealPrice * 0.4);
-  const phase3Amount = dealPrice - phase1Amount - phase2Amount;
 
   // Execute payment simulation
   const handlePayPhase1 = () => {
@@ -65,48 +144,22 @@ export default function BookingFlow() {
         status: 'active',
         cancellation_status: null,
         refund_amount: 0,
-        total_photos_uploaded: 1847, // Default demo count
+        total_photos_uploaded: 1847,
         created_at: new Date().toISOString().slice(0, 10),
       };
 
-      const generatedPhases = [
-        {
-          id: 'pp_' + Date.now() + '_1',
-          booking_id: generatedBookingId,
-          phase_number: 1,
-          name: 'Advance Booking Payment',
-          amount: phase1Amount,
-          due_date: new Date().toISOString().slice(0, 10),
-          paid_date: new Date().toISOString().slice(0, 10),
-          status: 'approved', // Paid right now!
-          proof_screenshot_url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400',
-          edit_history: [],
-        },
-        {
-          id: 'pp_' + Date.now() + '_2',
-          booking_id: generatedBookingId,
-          phase_number: 2,
-          name: 'Pre-Event Assurance',
-          amount: phase2Amount,
-          due_date: '2026-12-20',
-          paid_date: null,
-          status: 'pending',
-          proof_screenshot_url: null,
-          edit_history: [],
-        },
-        {
-          id: 'pp_' + Date.now() + '_3',
-          booking_id: generatedBookingId,
-          phase_number: 3,
-          name: 'Final Delivery & Release',
-          amount: phase3Amount,
-          due_date: '2027-01-05',
-          paid_date: null,
-          status: 'pending',
-          proof_screenshot_url: null,
-          edit_history: [],
-        },
-      ];
+      const generatedPhases = phasesList.map((phase, idx) => ({
+        id: 'pp_' + Date.now() + '_' + (idx + 1),
+        booking_id: generatedBookingId,
+        phase_number: idx + 1,
+        name: phase.name,
+        amount: Number(phase.amount),
+        due_date: phase.due_date,
+        paid_date: idx === 0 ? new Date().toISOString().slice(0, 10) : null,
+        status: idx === 0 ? 'approved' : 'pending',
+        proof_screenshot_url: idx === 0 ? 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400' : null,
+        edit_history: [],
+      }));
 
       addBooking(generatedBooking, generatedPhases);
       setNewBookingId(generatedBookingId);
@@ -197,7 +250,17 @@ export default function BookingFlow() {
                             type="radio"
                             name="package"
                             checked={selectedPkgId === pkg.id}
-                            onChange={() => setSelectedPkgId(pkg.id)}
+                            onChange={() => {
+                              setSelectedPkgId(pkg.id);
+                              // Auto re-balance phases when switching package
+                              const p1 = Math.round(pkg.price * 0.3);
+                              const p2 = Math.round(pkg.price * 0.4);
+                              setPhasesList([
+                                { id: 1, name: 'Phase 1: Advance Booking (30%)', amount: p1, due_date: new Date().toISOString().slice(0, 10) },
+                                { id: 2, name: 'Phase 2: Pre-Event Payment (40%)', amount: p2, due_date: '2026-12-20' },
+                                { id: 3, name: 'Phase 3: Final Delivery (30%)', amount: pkg.price - p1 - p2, due_date: '2027-01-05' },
+                              ]);
+                            }}
                             className="text-rose-600 focus:ring-rose-500 h-4 w-4"
                           />
                           <div>
@@ -224,95 +287,173 @@ export default function BookingFlow() {
                 onClick={() => setStep(2)}
                 className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-900/20 cursor-pointer"
               >
-                Review Payment Plan →
+                Review & Customize Plan →
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 2: Payment Schedule Preview */}
+        {/* STEP 2: Payment Schedule Customization */}
         {step === 2 && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs space-y-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Booking Step 2</span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-1">
-                Agreed Deal & 3-Phase Schedule
+                Customize Milestone Schedule ({phasesList.length} Phases)
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                The total agreed deal price of <strong className="text-rose-600">{formatINR(dealPrice)}</strong> is locked on PaySnap. No unexpected discounts or unagreed deductions.
+                The total package price is locked at <strong className="text-rose-600">{formatINR(dealPrice)}</strong>. Customize the number of phases, due dates, and amount for each phase.
               </p>
             </div>
 
+            {/* Quick Presets for Phase Count */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+              <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1.5">
+                <Sliders className="w-4 h-4 text-rose-600" />
+                Quick Milestone Presets:
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => applyPresetPhases(2)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    phasesList.length === 2 ? 'bg-rose-600 text-white shadow-xs' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  2 Phases (50 / 50)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPresetPhases(3)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    phasesList.length === 3 ? 'bg-rose-600 text-white shadow-xs' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  3 Phases (30 / 40 / 30)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPresetPhases(4)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    phasesList.length === 4 ? 'bg-rose-600 text-white shadow-xs' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  4 Phases (25 / 25 / 25 / 25)
+                </button>
+              </div>
+            </div>
+
             {/* Locked Deal Summary Banner */}
-            <div className="p-4 bg-rose-50/80 rounded-2xl border border-rose-200 flex items-center justify-between">
+            <div className="p-4 bg-rose-50/80 rounded-2xl border border-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <span className="text-xs font-bold uppercase text-rose-800 tracking-wider">Locked Deal Price</span>
                 <p className="text-2xl font-black text-rose-950">{formatINR(dealPrice)}</p>
               </div>
-              <div className="text-right text-xs text-gray-600">
+              <div className="text-left sm:text-right text-xs text-gray-600">
                 <p className="font-bold">{selectedPkg.name} Package</p>
-                <p>{eventDate}</p>
+                <p>Event: {eventDate} · {venue}</p>
               </div>
             </div>
 
-            {/* 3 Phases Detailed */}
-            <div className="space-y-3">
-              {/* Phase 1 */}
-              <div className="p-4 rounded-2xl border border-gray-200 bg-white flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-700 font-bold flex items-center justify-center text-xs">
-                    1
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-gray-900">Phase 1: Advance Booking (30%)</h4>
-                    <p className="text-xs text-gray-500">Due today to lock photographer's calendar</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="font-extrabold text-gray-900 text-base">{formatINR(phase1Amount)}</span>
-                  <span className="block text-[10px] text-amber-600 font-bold">Due at confirmation</span>
-                </div>
-              </div>
-
-              {/* Phase 2 */}
-              <div className="p-4 rounded-2xl border border-gray-200 bg-white flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 font-bold flex items-center justify-center text-xs">
-                    2
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-gray-900">Phase 2: Pre-Event Payment (40%)</h4>
-                    <p className="text-xs text-gray-500">Due 5 days before the wedding shoot</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="font-extrabold text-gray-900 text-base">{formatINR(phase2Amount)}</span>
-                  <span className="block text-[10px] text-gray-400">Due 20 Dec 2026</span>
-                </div>
-              </div>
-
-              {/* Phase 3 */}
-              <div className="p-4 rounded-2xl border border-gray-200 bg-white flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 font-bold flex items-center justify-center text-xs">
-                    3
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-sm text-gray-900">Phase 3: Final Delivery (30%)</h4>
-                    <p className="text-xs text-gray-500">Pay only after seeing 10 watermarked demo previews</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="font-extrabold text-gray-900 text-base">{formatINR(phase3Amount)}</span>
-                  <span className="block text-[10px] text-gray-400">Unlocks full gallery</span>
-                </div>
-              </div>
+            {/* Total Allocated vs Deal Price check */}
+            <div className={`p-3 rounded-xl border text-xs flex items-center justify-between ${
+              phaseDifference === 0 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800'
+            }`}>
+              <span>
+                Total Scheduled: <strong>{formatINR(totalPhasesAmount)}</strong> of <strong>{formatINR(dealPrice)}</strong>
+              </span>
+              {phaseDifference === 0 ? (
+                <span className="font-bold flex items-center gap-1 text-emerald-700">
+                  <Check className="w-3.5 h-3.5" /> Perfectly Balanced
+                </span>
+              ) : phaseDifference > 0 ? (
+                <span className="font-bold text-amber-700">
+                  ₹{phaseDifference.toLocaleString('en-IN')} remaining unallocated
+                </span>
+              ) : (
+                <span className="font-bold text-red-600">
+                  ₹{Math.abs(phaseDifference).toLocaleString('en-IN')} over-allocated
+                </span>
+              )}
             </div>
 
-            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
-              <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-              <span><strong>Photographer flexibility:</strong> Payment percentages and specific calendar dates can also be mutually fine-tuned from your photographer's dashboard with logged change history.</span>
+            {/* Customizable Phases List */}
+            <div className="space-y-4">
+              {phasesList.map((p, idx) => (
+                <div key={p.id || idx} className="p-4 rounded-2xl border border-gray-200 bg-white space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 font-black text-xs flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <span className="text-xs font-bold uppercase text-gray-500">
+                        Milestone {idx + 1} {idx === 0 && '(Advance Due Today)'}
+                      </span>
+                    </div>
+
+                    {phasesList.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhase(idx)}
+                        className="text-gray-400 hover:text-red-600 p-1 rounded-md hover:bg-gray-50 transition cursor-pointer"
+                        title="Remove Phase"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">
+                        Milestone Title
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={p.name}
+                        onChange={(e) => handleUpdatePhase(idx, 'name', e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:outline-hidden focus:border-rose-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">
+                        Amount (₹)
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        value={p.amount}
+                        onChange={(e) => handleUpdatePhase(idx, 'amount', e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:outline-hidden focus:border-rose-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">
+                        Payment Due Date
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={p.due_date}
+                        onChange={(e) => handleUpdatePhase(idx, 'due_date', e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:outline-hidden focus:border-rose-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+
+            {/* Add Custom Phase Button */}
+            <button
+              type="button"
+              onClick={handleAddPhase}
+              className="w-full py-3 rounded-2xl border-2 border-dashed border-rose-300 hover:border-rose-500 text-rose-600 hover:bg-rose-50/50 text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Add Another Milestone Phase
+            </button>
 
             <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
               <button
@@ -342,7 +483,7 @@ export default function BookingFlow() {
                 Digital Service Agreement
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                Transparent rules binding both customer and photographer to agreed scope and cancellation terms.
+                Transparent rules binding both customer and photographer to agreed scope, customized milestones, and cancellation terms.
               </p>
             </div>
 
@@ -358,21 +499,20 @@ export default function BookingFlow() {
                 <strong>Venue:</strong> {venue}<br />
                 <strong>Package:</strong> {selectedPkg.name} ({formatINR(dealPrice)})
               </p>
-              <p className="font-bold text-gray-900">1. PAYMENT PHASES</p>
-              <p>
-                - Phase 1 (Advance Booking): {formatINR(phase1Amount)} due immediately to secure shoot dates.<br />
-                - Phase 2 (Pre-Event): {formatINR(phase2Amount)} due prior to wedding commencement.<br />
-                - Phase 3 (Final Delivery): {formatINR(phase3Amount)} due after review of 10 demo preview photos.
-              </p>
-              <p className="font-bold text-gray-900">2. CANCELLATION & REFUND POLICY (SECTION 10)</p>
+              <p className="font-bold text-gray-900">1. CUSTOMIZED PAYMENT PHASES ({phasesList.length} MILESTONES)</p>
+              {phasesList.map((p, i) => (
+                <p key={p.id || i}>
+                  - {p.name}: {formatINR(p.amount)} (Due: {p.due_date})
+                </p>
+              ))}
+              <p className="font-bold text-gray-900">2. CANCELLATION & REFUND POLICY</p>
               <p>
                 - Non-refundable booking fee: A standard minimum fee of {formatINR(bookingFee)} is strictly non-refundable upon confirmation to cover calendar reserve losses.<br />
-                - Cancellation after booking: All amounts paid beyond the non-refundable fee of {formatINR(bookingFee)} will be returned via platform refund processing.<br />
-                Example: If {formatINR(phase1Amount + phase2Amount)} has been paid and customer cancels, refund returned is {formatINR(phase1Amount + phase2Amount - bookingFee)}.
+                - Cancellation after booking: All amounts paid beyond the non-refundable fee of {formatINR(bookingFee)} will be returned via platform refund processing.
               </p>
               <p className="font-bold text-gray-900">3. PHOTO DELIVERY</p>
               <p>
-                Photographer will upload the complete set of edited digital photos. 10 watermarked preview photos will be shown. The remaining full-resolution download package unlocks upon Phase 3 payment approval.
+                Photographer will upload the complete set of edited digital photos. 10 watermarked preview photos will be shown. The remaining full-resolution download package unlocks upon final milestone payment approval.
               </p>
             </div>
 
@@ -385,7 +525,7 @@ export default function BookingFlow() {
                 className="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 rounded"
               />
               <span className="text-xs text-gray-800 font-semibold leading-normal">
-                I have read and agree to the PaySnap Service Agreement, locked price of {formatINR(dealPrice)}, 3-phase milestone schedule, and non-refundable {formatINR(bookingFee)} booking fee terms.
+                I have read and agree to the PaySnap Service Agreement, locked price of {formatINR(dealPrice)}, customized {phasesList.length}-phase milestone schedule, and non-refundable {formatINR(bookingFee)} booking fee terms.
               </span>
             </label>
 
@@ -407,7 +547,7 @@ export default function BookingFlow() {
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
-                Accept & Proceed to Pay Phase 1 →
+                Accept & Proceed to Pay Phase 1 ({formatINR(phase1PayAmount)}) →
               </button>
             </div>
           </div>
@@ -419,7 +559,7 @@ export default function BookingFlow() {
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Booking Step 4</span>
               <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-1">
-                Pay Phase 1 Advance ({formatINR(phase1Amount)})
+                Pay Phase 1 Advance ({formatINR(phase1PayAmount)})
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 Simulated payment gateway with direct settlement to {photographer.shop_name}.
@@ -435,7 +575,7 @@ export default function BookingFlow() {
                   Phase 1 Advance Paid Successfully!
                 </h3>
                 <p className="text-sm text-gray-600 max-w-md mx-auto">
-                  Your wedding shoot with <strong>{photographer.shop_name}</strong> is confirmed. Status updated to <strong>"Phase 1 Paid"</strong>.
+                  Your wedding shoot with <strong>{photographer.shop_name}</strong> is confirmed with your customized {phasesList.length}-phase schedule. Status updated to <strong>"Phase 1 Paid"</strong>.
                 </p>
                 <div className="pt-4 flex flex-col sm:flex-row justify-center gap-3">
                   <Link
@@ -486,51 +626,58 @@ export default function BookingFlow() {
                 </div>
 
                 {paymentMethod === 'upi' && (
-                  <div className="space-y-3">
-                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Enter UPI ID
-                    </label>
-                    <input
-                      type="text"
-                      value={upiId}
-                      onChange={(e) => setUpiId(e.target.value)}
-                      placeholder="priya@okhdfcbank"
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:outline-hidden focus:border-rose-500"
-                    />
-                    <p className="text-[11px] text-gray-500">
-                      *Demo mock: No real money will be charged.
-                    </p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                        Enter UPI ID / VPA
+                      </label>
+                      <input
+                        type="text"
+                        value={upiId}
+                        onChange={(e) => setUpiId(e.target.value)}
+                        placeholder="yourname@okaxis"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium focus:outline-hidden focus:border-rose-500"
+                      />
+                    </div>
+
+                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-center">
+                      <div className="w-32 h-32 bg-white border border-gray-300 rounded-xl mx-auto flex items-center justify-center p-2 mb-2 shadow-xs">
+                        <img
+                          src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=paysnap@okhdfcbank"
+                          alt="PaySnap Demo UPI QR"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <p className="text-[11px] text-gray-500 font-medium">Scan to pay with any UPI app</p>
+                    </div>
                   </div>
                 )}
 
                 {paymentMethod === 'card' && (
-                  <div className="space-y-3 text-xs">
+                  <div className="space-y-3">
                     <div>
-                      <label className="block font-bold text-gray-700 uppercase mb-1">Card Number</label>
+                      <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Card Number</label>
                       <input
                         type="text"
-                        disabled
-                        value="•••• •••• •••• 4242 (Demo)"
-                        className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-600"
+                        defaultValue="4111 2222 3333 4444"
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block font-bold text-gray-700 uppercase mb-1">Expiry</label>
+                        <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Expiry</label>
                         <input
                           type="text"
-                          disabled
-                          value="12/28"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-600"
+                          defaultValue="12/28"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium"
                         />
                       </div>
                       <div>
-                        <label className="block font-bold text-gray-700 uppercase mb-1">CVV</label>
+                        <label className="block text-xs font-bold text-gray-700 uppercase mb-1">CVV</label>
                         <input
-                          type="text"
-                          disabled
-                          value="•••"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-600"
+                          type="password"
+                          defaultValue="789"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium"
                         />
                       </div>
                     </div>
@@ -538,36 +685,49 @@ export default function BookingFlow() {
                 )}
 
                 {paymentMethod === 'netbanking' && (
-                  <div className="p-3 bg-gray-50 rounded-xl text-xs text-gray-600">
-                    HDFC Bank, ICICI Bank, SBI, Axis Bank (simulated gateway)
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Select Bank</label>
+                    <select className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm font-medium">
+                      <option>HDFC Bank</option>
+                      <option>ICICI Bank</option>
+                      <option>State Bank of India</option>
+                      <option>Axis Bank</option>
+                    </select>
                   </div>
                 )}
 
-                <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center justify-between text-xs">
+                {/* Amount to pay */}
+                <div className="p-4 bg-rose-50/70 rounded-2xl border border-rose-200 flex items-center justify-between">
                   <div>
-                    <span className="text-gray-500 block">Total Due Now</span>
-                    <span className="text-xl font-black text-rose-700">{formatINR(phase1Amount)}</span>
+                    <span className="text-[10px] uppercase font-bold text-rose-800">Total Payable Now</span>
+                    <p className="text-xl font-black text-rose-950">{formatINR(phase1PayAmount)}</p>
                   </div>
-                  <span className="text-[11px] text-rose-600 font-semibold bg-white px-2 py-1 rounded-md border border-rose-200 flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> Gateway Protected
-                  </span>
+                  <span className="text-xs text-gray-500">Includes {formatINR(bookingFee)} calendar lock deposit</span>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={isProcessing}
-                  onClick={handlePayPhase1}
-                  className="w-full py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm shadow-md shadow-rose-900/20 transition cursor-pointer flex items-center justify-center gap-2"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Processing Payment via Gateway...
-                    </>
-                  ) : (
-                    `Pay ${formatINR(phase1Amount)} & Confirm Booking`
-                  )}
-                </button>
+                <div className="pt-2 flex justify-between items-center">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="text-xs font-semibold text-gray-500 hover:text-gray-800 cursor-pointer"
+                  >
+                    ← Back to agreement
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isProcessing}
+                    onClick={handlePayPhase1}
+                    className="px-8 py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-900/20 cursor-pointer flex items-center gap-2"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Processing Payment...
+                      </>
+                    ) : (
+                      <>Pay {formatINR(phase1PayAmount)} Securely →</>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -3,10 +3,18 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
-import { Check, Calendar } from 'lucide-react';
+import { Check, Calendar, AlertCircle } from 'lucide-react';
 
 export default function MyBookings() {
-  const { currentUser, getBookingsForCustomer, getPhotographer, getPhasesForBooking, formatINR } = useApp();
+  const {
+    currentUser,
+    getBookingsForCustomer,
+    getPhotographer,
+    getPhasesForBooking,
+    hasOverduePhase,
+    isPhaseOverdue,
+    formatINR,
+  } = useApp();
   const [activeTab, setActiveTab] = useState('active');
 
   const customerId = currentUser?.id || 'c1';
@@ -29,7 +37,7 @@ export default function MyBookings() {
               My Wedding Bookings
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              Track 3-phase milestones, review demo photos, and release balances.
+              Track milestone payment schedules, review demo photos, and release balances.
             </p>
           </div>
           <Link
@@ -70,6 +78,8 @@ export default function MyBookings() {
             {displayedBookings.map((b) => {
               const photographer = getPhotographer(b.photographer_id);
               const phases = getPhasesForBooking(b.id);
+              const isOverdue = hasOverduePhase(b.id);
+
               const paidAmount = phases
                 .filter((p) => p.status === 'approved')
                 .reduce((sum, p) => sum + p.amount, 0);
@@ -78,26 +88,25 @@ export default function MyBookings() {
               // Determine current phase description
               const approvedCount = phases.filter((p) => p.status === 'approved').length;
               let phaseBadgeStatus = 'pending';
-              let phaseDescription = 'Phase 1 Pending';
 
-              if (b.status === 'cancelled') {
+              if (isOverdue) {
+                phaseBadgeStatus = 'action_required';
+              } else if (b.status === 'cancelled') {
                 phaseBadgeStatus = 'cancelled';
-                phaseDescription = 'Booking Cancelled';
-              } else if (b.status === 'completed' || approvedCount === 3) {
+              } else if (b.status === 'completed' || (phases.length > 0 && approvedCount === phases.length)) {
                 phaseBadgeStatus = 'completed';
-                phaseDescription = 'All Phases Paid';
-              } else if (approvedCount === 2) {
-                phaseBadgeStatus = 'submitted';
-                phaseDescription = 'Phase 3 Awaiting Delivery';
-              } else if (approvedCount === 1) {
+              } else if (approvedCount > 0) {
                 phaseBadgeStatus = 'paid';
-                phaseDescription = 'Phase 1 Paid · Phase 2 Pending';
               }
 
               return (
                 <div
                   key={b.id}
-                  className="bg-white rounded-3xl p-6 border border-rose-100 shadow-2xs hover:shadow-md transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6"
+                  className={`bg-white rounded-3xl p-6 border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 ${
+                    isOverdue
+                      ? 'border-red-300 ring-2 ring-red-200 shadow-md'
+                      : 'border-rose-100 shadow-2xs hover:shadow-md'
+                  }`}
                 >
                   <div className="flex items-start gap-4 flex-1">
                     <img
@@ -116,32 +125,39 @@ export default function MyBookings() {
                         Event Date: <strong className="text-gray-800">{b.event_date}</strong> · Venue: {b.venue}
                       </p>
 
-                      {/* 3-Phase Milestone Indicators */}
-                      <div className="mt-3 flex items-center gap-2">
-                        {phases.map((p, idx) => (
-                          <div key={p.id} className="flex items-center gap-1.5 text-[11px]">
-                            <span
-                              className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[9px] ${
-                                p.status === 'approved'
-                                  ? 'bg-emerald-500 text-white'
-                                  : p.status === 'submitted'
-                                  ? 'bg-amber-400 text-amber-950'
-                                  : 'bg-gray-200 text-gray-600'
-                              }`}
-                            >
-                              {p.status === 'approved' ? (
-                                <Check className="w-3 h-3" />
-                              ) : (
-                                idx + 1
-                              )}
-                            </span>
-                            <span className="hidden md:inline text-gray-600">
-                              Phase {p.phase_number}
-                            </span>
-                            {idx < phases.length - 1 && <span className="text-gray-300">→</span>}
-                          </div>
-                        ))}
+                      {/* Milestone Indicators */}
+                      <div className="mt-3 flex items-center gap-2 flex-wrap">
+                        {phases.map((p, idx) => {
+                          const phaseOverdue = isPhaseOverdue(p);
+                          return (
+                            <div key={p.id} className="flex items-center gap-1.5 text-[11px]">
+                              <span
+                                className={`w-4 h-4 rounded-full flex items-center justify-center font-bold text-[9px] ${
+                                  phaseOverdue
+                                    ? 'bg-red-600 text-white'
+                                    : p.status === 'approved'
+                                    ? 'bg-emerald-500 text-white'
+                                    : p.status === 'submitted'
+                                    ? 'bg-amber-400 text-amber-950'
+                                    : 'bg-gray-200 text-gray-600'
+                                }`}
+                              >
+                                {phaseOverdue ? '!' : p.status === 'approved' ? <Check className="w-3 h-3" /> : idx + 1}
+                              </span>
+                              <span className={`hidden md:inline ${phaseOverdue ? 'text-red-700 font-bold' : 'text-gray-600'}`}>
+                                Phase {p.phase_number}
+                              </span>
+                              {idx < phases.length - 1 && <span className="text-gray-300">→</span>}
+                            </div>
+                          );
+                        })}
                       </div>
+
+                      {isOverdue && (
+                        <p className="text-xs font-bold text-red-600 mt-2 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5" /> Action Required: Milestone payment past due date.
+                        </p>
+                      )}
 
                       {b.status === 'cancelled' && (
                         <p className="text-xs font-bold text-red-600 mt-2">
@@ -163,9 +179,13 @@ export default function MyBookings() {
 
                     <Link
                       to={`/booking/${b.id}`}
-                      className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-xs transition"
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs transition ${
+                        isOverdue
+                          ? 'bg-red-600 hover:bg-red-700 text-white'
+                          : 'bg-rose-600 hover:bg-rose-700 text-white'
+                      }`}
                     >
-                      View Details & Previews →
+                      {isOverdue ? 'Clear Overdue Milestone →' : 'View Details & Previews →'}
                     </Link>
                   </div>
                 </div>
@@ -177,7 +197,7 @@ export default function MyBookings() {
             <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-2" />
             <h3 className="text-lg font-bold text-gray-800">No {activeTab} bookings</h3>
             <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-sm mx-auto">
-              Ready to safeguard your wedding shoot? Explore verified Pune studios and book with 3-phase milestones.
+              Ready to safeguard your wedding shoot? Explore verified Pune studios and book with customizable milestones.
             </p>
             <Link
               to="/dashboard"

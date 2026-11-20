@@ -35,6 +35,8 @@ function AppRoutes() {
       <Route path="/booking/:bookingId" element={<ProtectedRoute role="customer"><BookingDetail /></ProtectedRoute>} />
       <Route path="/support" element={<ProtectedRoute role="customer"><CustomerSupport /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute role="customer"><CustomerProfile /></ProtectedRoute>} />
+      <Route path="/customer-profile/:customerId" element={<CustomerProfile />} />
+      <Route path="/profile/:customerId" element={<CustomerProfile />} />
       <Route path="/photographer-dashboard" element={<ProtectedRoute role="photographer"><PhotographerDashboard /></ProtectedRoute>} />
       <Route path="/photographer-dashboard/customer/:bookingId" element={<ProtectedRoute role="photographer"><PhotographerCustomerDetail /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />

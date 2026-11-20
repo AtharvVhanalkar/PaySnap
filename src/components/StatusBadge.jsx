@@ -1,18 +1,36 @@
-export default function StatusBadge({ status }) {
+import React from 'react';
+import { AlertCircle } from 'lucide-react';
+
+export default function StatusBadge({ status, className = '' }) {
   const map = {
-    approved: 'bg-green-100 text-green-700',
-    paid: 'bg-green-100 text-green-700',
-    completed: 'bg-green-100 text-green-700',
-    submitted: 'bg-amber-100 text-amber-700',
-    pending: 'bg-gray-100 text-gray-600',
-    overdue: 'bg-red-100 text-red-700',
-    cancelled: 'bg-red-100 text-red-700',
-    rejected: 'bg-red-100 text-red-700',
-    active: 'bg-blue-100 text-blue-700',
+    approved: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    paid: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    completed: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    submitted: 'bg-amber-100 text-amber-800 border-amber-200',
+    pending: 'bg-gray-100 text-gray-700 border-gray-200',
+    overdue: 'bg-red-100 text-red-800 border-red-300 font-bold',
+    action_required: 'bg-red-50 text-red-700 border-red-300 font-extrabold ring-1 ring-red-200',
+    cancelled: 'bg-red-100 text-red-700 border-red-200',
+    rejected: 'bg-red-100 text-red-700 border-red-200',
+    active: 'bg-blue-50 text-blue-700 border-blue-200',
   };
-  const label = status?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+  const labelMap = {
+    action_required: 'Action Required',
+    submitted: 'Proof Submitted',
+  };
+
+  const label = labelMap[status] || status?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
   return (
-    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${map[status] || 'bg-gray-100 text-gray-600'}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+        map[status] || 'bg-gray-100 text-gray-600 border-gray-200'
+      } ${className}`}
+    >
+      {(status === 'action_required' || status === 'overdue') && (
+        <AlertCircle className="w-3 h-3 text-red-600 shrink-0" />
+      )}
       {label}
     </span>
   );

@@ -74,3 +74,4 @@ export default function Logo({ size = 'md', className = '', showBadge = true, va
     </div>
   );
 }
+
