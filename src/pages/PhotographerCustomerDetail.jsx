@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { previewPhotos } from '../data/mockData';
+import { Phone, Mail, Check, Clock, FileText, Edit3, Folder, Cloud } from 'lucide-react';
 
 export default function PhotographerCustomerDetail() {
   const { bookingId } = useParams();
@@ -125,8 +126,10 @@ export default function PhotographerCustomerDetail() {
                   </h1>
                   <StatusBadge status={booking.status} />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  📞 {customer?.phone || '9988776655'} · ✉️ {customer?.email || 'priya@email.com'}
+                <p className="text-xs text-gray-500 mt-1 flex items-center flex-wrap gap-2">
+                  <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-gray-400" /> {customer?.phone || '9988776655'}</span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5 text-gray-400" /> {customer?.email || 'priya@email.com'}</span>
                 </p>
                 <p className="text-xs text-gray-500">
                   Booking ID: <strong className="font-mono text-gray-800">#{booking.id}</strong>
@@ -263,7 +266,7 @@ export default function PhotographerCustomerDetail() {
                               : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          {isApproved ? '✓' : phase.phase_number}
+                          {isApproved ? <Check className="w-4 h-4 mx-auto" /> : phase.phase_number}
                         </div>
 
                         <div>
@@ -282,8 +285,9 @@ export default function PhotographerCustomerDetail() {
 
                           {/* Edit History Log */}
                           {phase.edit_history && phase.edit_history.length > 0 && (
-                            <div className="mt-1 text-[10px] text-gray-400">
-                              🕒 Last modified: {phase.edit_history[phase.edit_history.length - 1].timestamp.slice(0, 16).replace('T', ' ')}
+                            <div className="mt-1 text-[10px] text-gray-400 flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-gray-400" />
+                              <span>Last modified: {phase.edit_history[phase.edit_history.length - 1].timestamp.slice(0, 16).replace('T', ' ')}</span>
                             </div>
                           )}
                         </div>
@@ -296,9 +300,9 @@ export default function PhotographerCustomerDetail() {
                           <button
                             type="button"
                             onClick={() => setPreviewScreenshot(phase.proof_screenshot_url)}
-                            className="px-2.5 py-1.5 rounded-lg border border-gray-300 text-[11px] font-bold text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-1"
+                            className="px-2.5 py-1.5 rounded-lg border border-gray-300 text-[11px] font-bold text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-1.5"
                           >
-                            <span>🧾</span> View Proof
+                            <FileText className="w-3.5 h-3.5" /> View Proof
                           </button>
                         )}
 
@@ -308,9 +312,9 @@ export default function PhotographerCustomerDetail() {
                             <button
                               type="button"
                               onClick={() => handleApprove(phase.id)}
-                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1"
+                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5"
                             >
-                              <span>✓</span> Approve Payment
+                              <Check className="w-3.5 h-3.5" /> Approve Payment
                             </button>
                             <button
                               type="button"
@@ -330,7 +334,7 @@ export default function PhotographerCustomerDetail() {
                             className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 cursor-pointer"
                             title="Edit Phase Schedule"
                           >
-                            ✏️
+                            <Edit3 className="w-3.5 h-3.5" />
                           </button>
                         )}
                       </div>
@@ -355,8 +359,8 @@ export default function PhotographerCustomerDetail() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-xl">
-                📁 {photoCount} Photos in Cloud
+              <span className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
+                <Folder className="w-3.5 h-3.5 text-gray-600" /> {photoCount} Photos in Cloud
               </span>
             </div>
           </div>
@@ -366,8 +370,8 @@ export default function PhotographerCustomerDetail() {
             onClick={handleMockUpload}
             className="border-2 border-dashed border-rose-300 rounded-3xl p-8 text-center bg-[#fdf8f3]/60 hover:bg-rose-50/50 transition cursor-pointer group"
           >
-            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 text-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-              ☁️
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+              <Cloud className="w-6 h-6" />
             </div>
             <h3 className="font-extrabold text-sm text-gray-900">
               Click to Upload Event Raw & Edited Photos (Demo)
@@ -381,8 +385,9 @@ export default function PhotographerCustomerDetail() {
           </div>
 
           {uploadToast && (
-            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200">
-              ✓ Successfully synced 150 wedding photos to encrypted storage!
+            <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-600" />
+              <span>Successfully synced 150 wedding photos to encrypted storage!</span>
             </div>
           )}
 
@@ -413,7 +418,7 @@ export default function PhotographerCustomerDetail() {
                       <span className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold ${
                         isSelected ? 'bg-rose-600 text-white' : 'bg-white/80 text-gray-600'
                       }`}>
-                        {isSelected ? '✓' : ''}
+                        {isSelected ? <Check className="w-3.5 h-3.5" /> : ''}
                       </span>
                     </div>
                     <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded font-bold">

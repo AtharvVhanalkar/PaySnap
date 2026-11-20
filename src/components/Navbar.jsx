@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { Camera, Search, Calendar, User, Shield, BarChart3, Eye, Star, LogOut } from 'lucide-react';
 
 export default function Navbar() {
   const { currentUser, login, logout, getCustomer, getPhotographer } = useApp();
@@ -38,13 +39,13 @@ export default function Navbar() {
               onClick={() => { login('customer', 'c1'); navigate('/dashboard'); }}
               className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition ${currentUser?.type === 'customer' ? 'bg-white text-rose-900 font-bold shadow-sm' : 'bg-rose-900/60 hover:bg-rose-900 text-white'}`}
             >
-              👤 Customer (Priya)
+              Customer (Priya)
             </button>
             <button
               onClick={() => { login('photographer', 'p1'); navigate('/photographer-dashboard'); }}
               className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition ${currentUser?.type === 'photographer' ? 'bg-white text-rose-900 font-bold shadow-sm' : 'bg-rose-900/60 hover:bg-rose-900 text-white'}`}
             >
-              📷 Photographer (Rahul)
+              Photographer (Rahul)
             </button>
           </div>
         </div>
@@ -57,9 +58,11 @@ export default function Navbar() {
             to={currentUser?.type === 'photographer' ? '/photographer-dashboard' : currentUser?.type === 'customer' ? '/dashboard' : '/'}
             className="flex items-center gap-2.5 group"
           >
-            <span className="text-2xl p-1.5 bg-rose-50 rounded-xl group-hover:scale-105 transition-transform">📸</span>
+            <span className="p-2 bg-rose-50 text-rose-600 rounded-xl group-hover:scale-105 transition-transform">
+              <Camera className="w-5 h-5" />
+            </span>
             <div>
-              <span className="font-extrabold text-rose-600 text-xl tracking-tight">UpStart</span>
+              <span className="font-extrabold text-rose-600 text-xl tracking-tight">PaySnap</span>
               <span className="hidden md:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
                 Wedding Shield
               </span>
@@ -134,31 +137,31 @@ export default function Navbar() {
 
                     {currentUser.type === 'customer' && (
                       <>
-                        <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>🔍</span> Browse Studios
+                        <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <Search className="w-4 h-4 text-gray-500" /> Browse Studios
                         </Link>
-                        <Link to="/my-bookings" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>📅</span> My Bookings & Delivery
+                        <Link to="/my-bookings" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <Calendar className="w-4 h-4 text-gray-500" /> My Bookings & Delivery
                         </Link>
-                        <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>👤</span> My Profile
+                        <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <User className="w-4 h-4 text-gray-500" /> My Profile
                         </Link>
-                        <Link to="/support" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>🛡️</span> Help & Cancellation Policy
+                        <Link to="/support" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <Shield className="w-4 h-4 text-gray-500" /> Help & Cancellation Policy
                         </Link>
                       </>
                     )}
 
                     {currentUser.type === 'photographer' && (
                       <>
-                        <Link to="/photographer-dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>📊</span> Active Shoots & Revenue
+                        <Link to="/photographer-dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <BarChart3 className="w-4 h-4 text-gray-500" /> Active Shoots & Revenue
                         </Link>
-                        <Link to={`/photographer/${currentUser.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>👁️</span> View My Public Profile
+                        <Link to={`/photographer/${currentUser.id}`} onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <Eye className="w-4 h-4 text-gray-500" /> View My Public Profile
                         </Link>
-                        <Link to="/pricing" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                          <span>⭐</span> Founding Plan (₹99/mo)
+                        <Link to="/pricing" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                          <Star className="w-4 h-4 text-gray-500" /> Founding Plan (₹99/mo)
                         </Link>
                       </>
                     )}
@@ -166,9 +169,9 @@ export default function Navbar() {
                     <div className="border-t border-gray-100 my-1 pt-1">
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium cursor-pointer"
+                        className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium cursor-pointer"
                       >
-                        <span>🚪</span> Sign Out
+                        <LogOut className="w-4 h-4 text-red-600" /> Sign Out
                       </button>
                     </div>
                   </div>

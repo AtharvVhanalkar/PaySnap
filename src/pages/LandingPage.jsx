@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useApp } from '../context/AppContext';
+import { Sparkles, Zap, AlertTriangle, X, Shield, Check, Camera } from 'lucide-react';
 
 export default function LandingPage() {
   const { login } = useApp();
@@ -22,7 +23,8 @@ export default function LandingPage() {
         </div>
         <div className="relative max-w-5xl mx-auto px-4 py-20 sm:py-28 text-center flex flex-col items-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/20 border border-rose-400/30 text-rose-200 text-xs sm:text-sm font-medium mb-6 backdrop-blur-md">
-            <span>✨</span> Safe, Agreed & Transparent Wedding Deals in Pune
+            <Sparkles className="w-4 h-4 text-rose-300" />
+            <span>Safe, Agreed & Transparent Wedding Deals in Pune</span>
           </div>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight sm:leading-tight">
             Your wedding memories, protected. <br className="hidden sm:inline" />
@@ -49,7 +51,9 @@ export default function LandingPage() {
 
           {/* Quick Demo Launchers */}
           <div className="mt-12 p-3 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md flex flex-wrap items-center justify-center gap-3 text-xs">
-            <span className="text-rose-200 font-semibold">⚡ Quick Interactive Demo:</span>
+            <span className="text-rose-200 font-semibold flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-amber-400" /> Quick Interactive Demo:
+            </span>
             <button
               onClick={() => { login('customer', 'c1'); navigate('/dashboard'); }}
               className="px-3 py-1.5 rounded-lg bg-rose-500/80 hover:bg-rose-500 text-white font-medium cursor-pointer transition"
@@ -80,51 +84,51 @@ export default function LandingPage() {
 
         <div className="grid sm:grid-cols-2 gap-8">
           <div className="bg-white rounded-3xl p-8 border border-red-100 shadow-sm relative overflow-hidden">
-            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center text-2xl font-bold mb-5">
-              ⚠️
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mb-5">
+              <AlertTriangle className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-3">The Common Pitfalls</h3>
             <ul className="space-y-3 text-sm text-gray-600">
               <li className="flex items-start gap-2">
-                <span className="text-red-500 font-bold">✗</span>
-                Last-minute discount demands before final album hand-over.
+                <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>Last-minute discount demands before final album hand-over.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 font-bold">✗</span>
-                Informal UPI/cash with no binding digital scope or locked price.
+                <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>Informal UPI/cash with no binding digital scope or locked price.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 font-bold">✗</span>
-                Photographers chasing clients for months after the event.
+                <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>Photographers chasing clients for months after the event.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 font-bold">✗</span>
-                Clients uncertain if their photo count and quality will be honoured.
+                <X className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>Clients uncertain if their photo count and quality will be honoured.</span>
               </li>
             </ul>
           </div>
 
           <div className="bg-white rounded-3xl p-8 border border-emerald-100 shadow-sm relative overflow-hidden">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold mb-5">
-              🛡️
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-5">
+              <Shield className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-3">The UpStart Solution</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">The PaySnap Solution</h3>
             <ul className="space-y-3 text-sm text-gray-600">
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 font-bold">✓</span>
-                <strong>Agreed Locked Deal:</strong> Price cannot be arbitrarily discounted later.
+                <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Agreed Locked Deal:</strong> Price cannot be arbitrarily discounted later.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 font-bold">✓</span>
-                <strong>Structured 3 Phases:</strong> Advance, Pre-Event, and Final Delivery milestones.
+                <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Structured 3 Phases:</strong> Advance, Pre-Event, and Final Delivery milestones.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 font-bold">✓</span>
-                <strong>10 Demo Previews:</strong> Customer verifies photo quality with watermarked samples.
+                <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>10 Demo Previews:</strong> Customer verifies photo quality with watermarked samples.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 font-bold">✓</span>
-                <strong>Total Transparency:</strong> Live photo count uploaded, unlocked upon final phase.
+                <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                <span><strong>Total Transparency:</strong> Live photo count uploaded, unlocked upon final phase.</span>
               </li>
             </ul>
           </div>
@@ -201,8 +205,10 @@ export default function LandingPage() {
       <footer className="mt-auto border-t border-rose-100 bg-white py-8 text-center text-xs text-gray-500">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xl">📸</span>
-            <span className="font-bold text-gray-800 text-sm">UpStart Wedding Platform</span>
+            <span className="p-1 bg-rose-50 text-rose-600 rounded-lg">
+              <Camera className="w-4 h-4" />
+            </span>
+            <span className="font-bold text-gray-800 text-sm">PaySnap Wedding Platform</span>
             <span>— Pune, Maharashtra</span>
           </div>
           <div className="flex gap-4">
@@ -210,7 +216,7 @@ export default function LandingPage() {
             <Link to="/pricing" className="hover:text-rose-600">Photographer Pricing</Link>
             <Link to="/support" className="hover:text-rose-600">Customer FAQs</Link>
           </div>
-          <p>© 2026 UpStart. Live Interactive Demo.</p>
+          <p>© 2026 PaySnap. Live Interactive Demo.</p>
         </div>
       </footer>
     </div>

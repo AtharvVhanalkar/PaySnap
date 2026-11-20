@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useApp } from '../context/AppContext';
+import { Check } from 'lucide-react';
 
 export default function CustomerProfile() {
   const { currentUser, getCustomer, getBookingsForCustomer } = useApp();
@@ -47,8 +48,9 @@ export default function CustomerProfile() {
         </div>
 
         {savedSuccess && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200">
-            ✓ Profile details updated successfully!
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-1.5">
+            <Check className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Profile details updated successfully!</span>
           </div>
         )}
 

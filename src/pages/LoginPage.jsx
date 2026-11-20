@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useApp } from '../context/AppContext';
+import { Camera, User, Zap, Check } from 'lucide-react';
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
@@ -59,8 +60,10 @@ export default function LoginPage() {
         <div className="w-full max-w-lg bg-white rounded-3xl shadow-sm border border-rose-100 p-6 sm:p-8">
           {/* Header */}
           <div className="text-center mb-6">
-            <span className="text-3xl">📸</span>
-            <h1 className="text-2xl font-extrabold text-gray-900 mt-2">Welcome to UpStart</h1>
+            <div className="inline-flex p-3 rounded-2xl bg-rose-50 text-rose-600 mb-2">
+              <Camera className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-extrabold text-gray-900 mt-2">Welcome to PaySnap</h1>
             <p className="text-sm text-gray-500 mt-1">
               Select your role to access your personalized portal
             </p>
@@ -77,7 +80,7 @@ export default function LoginPage() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <span>👤</span> Customer / Bride & Groom
+              <User className="w-4 h-4" /> Customer / Bride & Groom
             </button>
             <button
               type="button"
@@ -88,7 +91,7 @@ export default function LoginPage() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <span>📷</span> Studio / Photographer
+              <Camera className="w-4 h-4" /> Studio / Photographer
             </button>
           </div>
 
@@ -342,8 +345,8 @@ export default function LoginPage() {
 
           {/* Quick Demo Shortcuts Card */}
           <div className="mt-8 pt-6 border-t border-gray-100 bg-[#fdf8f3] -mx-6 -mb-6 p-6 rounded-b-3xl">
-            <p className="text-xs font-bold uppercase tracking-wider text-amber-800 text-center mb-3">
-              ⚡ 1-Click Demo Evaluation Sign In
+            <p className="text-xs font-bold uppercase tracking-wider text-amber-800 text-center mb-3 flex items-center justify-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-amber-600" /> 1-Click Demo Evaluation Sign In
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -352,7 +355,7 @@ export default function LoginPage() {
                 className="py-2.5 px-3 rounded-xl bg-white border border-rose-200 hover:border-rose-400 text-xs font-bold text-gray-800 shadow-2xs text-left cursor-pointer transition hover:bg-rose-50/50"
               >
                 <div className="flex items-center gap-1.5 text-rose-600 font-extrabold">
-                  <span>👤</span> Customer
+                  <User className="w-3.5 h-3.5" /> Customer
                 </div>
                 <div className="text-[11px] text-gray-500 font-normal truncate">Priya Mehta (Active Bookings)</div>
               </button>
@@ -363,7 +366,7 @@ export default function LoginPage() {
                 className="py-2.5 px-3 rounded-xl bg-white border border-rose-200 hover:border-rose-400 text-xs font-bold text-gray-800 shadow-2xs text-left cursor-pointer transition hover:bg-rose-50/50"
               >
                 <div className="flex items-center gap-1.5 text-amber-700 font-extrabold">
-                  <span>📷</span> Photographer
+                  <Camera className="w-3.5 h-3.5" /> Photographer
                 </div>
                 <div className="text-[11px] text-gray-500 font-normal truncate">Rahul (Captured Moments)</div>
               </button>
@@ -382,8 +385,9 @@ export default function LoginPage() {
             </p>
 
             {forgotSuccess ? (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs mb-4">
-                ✓ Reset link has been dispatched to your email (simulated for demo).
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs mb-4 flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Reset link has been dispatched to your email (simulated for demo).</span>
               </div>
             ) : (
               <div className="space-y-3 mb-4">

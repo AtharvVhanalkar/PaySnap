@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
+import { Eye, Star, Check, Lock } from 'lucide-react';
 
 export default function PhotographerDashboard() {
   const { currentUser, getPhotographer, getBookingsForPhotographer, getCustomer, getPhasesForBooking, formatINR } = useApp();
@@ -70,15 +71,15 @@ export default function PhotographerDashboard() {
           <div className="flex gap-2">
             <Link
               to={`/photographer/${photographerId}`}
-              className="px-4 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition"
+              className="px-4 py-2 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition flex items-center gap-1.5"
             >
-              👁️ View Public Profile
+              <Eye className="w-3.5 h-3.5" /> View Public Profile
             </Link>
             <Link
               to="/pricing"
-              className="px-4 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-xs transition"
+              className="px-4 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl shadow-xs transition flex items-center gap-1.5"
             >
-              ⭐ Membership (₹99/mo)
+              <Star className="w-3.5 h-3.5" /> Membership (₹99/mo)
             </Link>
           </div>
         </div>
@@ -95,8 +96,8 @@ export default function PhotographerDashboard() {
                 {formatINR(totalReceivedAcrossAll)}
               </p>
             </div>
-            <p className="text-[11px] text-gray-500 mt-3 pt-2 border-t border-gray-100">
-              ✓ Cleared via gateway
+            <p className="text-[11px] text-gray-500 mt-3 pt-2 border-t border-gray-100 flex items-center gap-1">
+              <Check className="w-3 h-3 text-emerald-600" /> Cleared via gateway
             </p>
           </div>
 
@@ -110,8 +111,8 @@ export default function PhotographerDashboard() {
                 {formatINR(remainingBalanceTotal)}
               </p>
             </div>
-            <p className="text-[11px] text-gray-500 mt-3 pt-2 border-t border-gray-100">
-              📋 Locked in active deals
+            <p className="text-[11px] text-gray-500 mt-3 pt-2 border-t border-gray-100 flex items-center gap-1">
+              <Lock className="w-3 h-3 text-rose-600" /> Locked in active deals
             </p>
           </div>
 

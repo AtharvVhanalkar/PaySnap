@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useApp } from '../context/AppContext';
+import { Check, Info, Lock, Loader2 } from 'lucide-react';
 
 export default function BookingFlow() {
   const { photographerId } = useParams();
@@ -238,7 +239,7 @@ export default function BookingFlow() {
                 Agreed Deal & 3-Phase Schedule
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                The total agreed deal price of <strong className="text-rose-600">{formatINR(dealPrice)}</strong> is locked on UpStart. No unexpected discounts or unagreed deductions.
+                The total agreed deal price of <strong className="text-rose-600">{formatINR(dealPrice)}</strong> is locked on PaySnap. No unexpected discounts or unagreed deductions.
               </p>
             </div>
 
@@ -308,8 +309,9 @@ export default function BookingFlow() {
               </div>
             </div>
 
-            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed">
-              💡 <strong>Photographer flexibility:</strong> Payment percentages and specific calendar dates can also be mutually fine-tuned from your photographer's dashboard with logged change history.
+            <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
+              <Info className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <span><strong>Photographer flexibility:</strong> Payment percentages and specific calendar dates can also be mutually fine-tuned from your photographer's dashboard with logged change history.</span>
             </div>
 
             <div className="pt-4 border-t border-gray-100 flex justify-between items-center">
@@ -347,7 +349,7 @@ export default function BookingFlow() {
             {/* Scrollable Agreement Box */}
             <div className="max-h-64 overflow-y-auto p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-gray-700 font-mono space-y-3 leading-relaxed">
               <p className="font-bold text-gray-900 uppercase">
-                UPSTART WEDDING PHOTOGRAPHY SERVICE AGREEMENT #UP-{Date.now().toString().slice(-6)}
+                PAYSNAP WEDDING PHOTOGRAPHY SERVICE AGREEMENT #PS-{Date.now().toString().slice(-6)}
               </p>
               <p>
                 <strong>Photographer Studio:</strong> {photographer.shop_name} ({photographer.owner_name})<br />
@@ -383,7 +385,7 @@ export default function BookingFlow() {
                 className="mt-0.5 text-rose-600 focus:ring-rose-500 h-4 w-4 rounded"
               />
               <span className="text-xs text-gray-800 font-semibold leading-normal">
-                I have read and agree to the UpStart Service Agreement, locked price of {formatINR(dealPrice)}, 3-phase milestone schedule, and non-refundable {formatINR(bookingFee)} booking fee terms.
+                I have read and agree to the PaySnap Service Agreement, locked price of {formatINR(dealPrice)}, 3-phase milestone schedule, and non-refundable {formatINR(bookingFee)} booking fee terms.
               </span>
             </label>
 
@@ -426,8 +428,8 @@ export default function BookingFlow() {
 
             {paymentSuccess ? (
               <div className="p-8 text-center space-y-4 bg-emerald-50 rounded-2xl border border-emerald-200 animate-in zoom-in-95">
-                <div className="w-16 h-16 bg-emerald-600 text-white text-3xl rounded-full flex items-center justify-center mx-auto shadow-lg">
-                  ✓
+                <div className="w-16 h-16 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <Check className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-black text-gray-900">
                   Phase 1 Advance Paid Successfully!
@@ -546,8 +548,8 @@ export default function BookingFlow() {
                     <span className="text-gray-500 block">Total Due Now</span>
                     <span className="text-xl font-black text-rose-700">{formatINR(phase1Amount)}</span>
                   </div>
-                  <span className="text-[11px] text-rose-600 font-semibold bg-white px-2 py-1 rounded-md border border-rose-200">
-                    🔒 Gateway Protected
+                  <span className="text-[11px] text-rose-600 font-semibold bg-white px-2 py-1 rounded-md border border-rose-200 flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Gateway Protected
                   </span>
                 </div>
 
@@ -559,7 +561,7 @@ export default function BookingFlow() {
                 >
                   {isProcessing ? (
                     <>
-                      <span className="animate-spin text-lg">⏳</span>
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Processing Payment via Gateway...
                     </>
                   ) : (

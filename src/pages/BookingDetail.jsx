@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { previewPhotos } from '../data/mockData';
+import { AlertTriangle, Lock, Unlock, Check, Camera, Shield, Download, CheckCircle, X } from 'lucide-react';
 
 export default function BookingDetail() {
   const { bookingId } = useParams();
@@ -104,7 +105,7 @@ export default function BookingDetail() {
           {/* Cancellation Alert if Cancelled */}
           {booking.status === 'cancelled' && (
             <div className="mt-4 p-4 bg-red-50 rounded-2xl border border-red-200 text-xs text-red-900 flex items-start gap-3">
-              <span className="text-xl">⚠️</span>
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
                 <strong className="block font-bold">This booking was cancelled.</strong>
                 <p className="mt-0.5">
@@ -122,8 +123,8 @@ export default function BookingDetail() {
               <h2 className="text-lg font-bold text-gray-900">3-Phase Payment Schedule</h2>
               <p className="text-xs text-gray-500">Each milestone secures a stage of your wedding photography.</p>
             </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-              🔒 Direct Gateway Settlement
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+              <Lock className="w-3 h-3" /> Direct Gateway Settlement
             </span>
           </div>
 
@@ -154,7 +155,7 @@ export default function BookingDetail() {
                           : 'bg-gray-100 text-gray-600'
                       }`}
                     >
-                      {isApproved ? '✓' : phase.phase_number}
+                      {isApproved ? <Check className="w-4 h-4 mx-auto" /> : phase.phase_number}
                     </div>
 
                     <div>
@@ -197,7 +198,7 @@ export default function BookingDetail() {
 
                     {isApproved && (
                       <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                        <span>✓</span> Cleared
+                        <Check className="w-3.5 h-3.5" /> Cleared
                       </span>
                     )}
                   </div>
@@ -212,7 +213,7 @@ export default function BookingDetail() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-gray-100">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl">📸</span>
+                <Camera className="w-5 h-5 text-rose-600" />
                 <h2 className="text-lg font-black text-gray-900">
                   Customer Event Gallery & Demo Previews
                 </h2>
@@ -223,19 +224,19 @@ export default function BookingDetail() {
             </div>
 
             {isPhase3Approved ? (
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
-                🔓 Full Resolution Gallery Unlocked
+              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full flex items-center gap-1.5">
+                <Unlock className="w-3.5 h-3.5" /> Full Resolution Gallery Unlocked
               </span>
             ) : (
-              <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
-                🔒 Full Gallery Unlocks After Phase 3
+              <span className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" /> Full Gallery Unlocks After Phase 3
               </span>
             )}
           </div>
 
           {!isPhase3Approved && (
             <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
-              <span>🛡️</span>
+              <Shield className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" />
               <div>
                 <strong>Watermarked Quality Previews:</strong> These 10 sample photos allow you to inspect color grading, focus, and capture quality. Right-click and downloads are disabled. Once you approve the final phase, all 1,847 photos will be instantly downloadable without watermark.
               </div>
@@ -281,9 +282,15 @@ export default function BookingDetail() {
           <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-xs text-gray-500">
               {isPhase3Approved ? (
-                <span className="text-emerald-700 font-bold">✓ Complete raw & edited collection available for download</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1.5">
+                  <Check className="w-4 h-4 text-emerald-600" />
+                  <span>Complete raw & edited collection available for download</span>
+                </span>
               ) : (
-                <span>⚠️ Remaining 1,837 high-res captures locked until Phase 3 final payment</span>
+                <span className="flex items-center gap-1.5 text-amber-800">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Remaining 1,837 high-res captures locked until Phase 3 final payment</span>
+                </span>
               )}
             </div>
 
@@ -292,22 +299,27 @@ export default function BookingDetail() {
                 onClick={() => setDownloadNotice(true)}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
               >
-                <span>📥</span> Download All 1,847 Photos (ZIP)
+                <Download className="w-4 h-4" /> Download All 1,847 Photos (ZIP)
               </button>
             ) : (
               <button
                 disabled
                 className="w-full sm:w-auto px-5 py-2.5 bg-gray-100 text-gray-400 font-bold text-xs rounded-xl cursor-not-allowed flex items-center justify-center gap-1.5"
               >
-                <span>🔒</span> Download Locked (Pay Phase 3)
+                <Lock className="w-4 h-4" /> Download Locked (Pay Phase 3)
               </button>
             )}
           </div>
 
           {downloadNotice && (
             <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex justify-between items-center border border-emerald-200">
-              <span>🎉 Simulated demo download: Your 18.4 GB wedding archive is downloading in background!</span>
-              <button onClick={() => setDownloadNotice(false)} className="font-bold ml-2">✕</button>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Simulated demo download: Your 18.4 GB wedding archive is downloading in background!</span>
+              </span>
+              <button onClick={() => setDownloadNotice(false)} className="p-1 hover:bg-emerald-100 rounded-lg cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
         </div>
@@ -388,8 +400,8 @@ export default function BookingDetail() {
       {cancelModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 text-2xl flex items-center justify-center">
-              ⚠️
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+              <AlertTriangle className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-black text-gray-900">Cancel Wedding Booking?</h3>
             <p className="text-xs text-gray-600 leading-relaxed">

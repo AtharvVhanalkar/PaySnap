@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useApp } from '../context/AppContext';
+import { Award, Check, CheckCircle, Shield } from 'lucide-react';
 
 export default function PricingPage() {
   const { login } = useApp();
@@ -38,8 +39,8 @@ export default function PricingPage() {
         {/* Pricing Card */}
         <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border-2 border-amber-400 shadow-xl relative overflow-hidden">
           {/* Badge */}
-          <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-400 text-amber-950 font-black text-[11px] px-4 py-1 rounded-bl-2xl uppercase tracking-wider">
-            🏅 Founding Member Rate
+          <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-400 text-amber-950 font-black text-[11px] px-4 py-1 rounded-bl-2xl uppercase tracking-wider flex items-center gap-1">
+            <Award className="w-3.5 h-3.5" /> Founding Member Rate
           </div>
 
           <div className="mb-6">
@@ -51,35 +52,35 @@ export default function PricingPage() {
               <span className="text-gray-500 font-bold text-sm">/ month</span>
               <span className="text-xs text-gray-400 line-through ml-2">₹299/mo regular</span>
             </div>
-            <p className="text-[11px] text-emerald-600 font-bold mt-1">
-              ✓ Price locked for life for founding members
+            <p className="text-[11px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+              <Check className="w-3.5 h-3.5" /> Price locked for life for founding members
             </p>
           </div>
 
           {/* Value Props List */}
           <div className="space-y-3 pt-4 border-t border-gray-100 text-xs text-gray-700">
             <div className="flex items-center gap-2.5">
-              <span className="text-emerald-500 font-bold text-base">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span><strong>0% Commission:</strong> Keep 100% of all client bookings.</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-emerald-500 font-bold text-base">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span><strong>Direct Settlement:</strong> Money goes straight to your gateway account.</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-emerald-500 font-bold text-base">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span><strong>3-Phase Milestone Shield:</strong> Advance, Pre-event & Delivery milestones.</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-emerald-500 font-bold text-base">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span><strong>Watermarked 10 Preview Photos:</strong> Show quality without giving away full gallery.</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-emerald-500 font-bold text-base">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span><strong>Digital Agreements:</strong> Enforce ₹5,000 non-refundable booking fee terms.</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-emerald-500 font-bold text-base">✓</span>
+              <Check className="w-4 h-4 text-emerald-500 shrink-0" />
               <span><strong>Founding Member Badge:</strong> Prominent badge on your public studio profile.</span>
             </div>
           </div>
@@ -87,8 +88,9 @@ export default function PricingPage() {
           {/* Action */}
           <div className="mt-8">
             {subscribed ? (
-              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-center text-xs font-bold text-emerald-800 animate-in zoom-in-95">
-                🎉 Subscription Activated! Redirecting to dashboard...
+              <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-center text-xs font-bold text-emerald-800 flex items-center justify-center gap-2 animate-in zoom-in-95">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                <span>Subscription Activated! Redirecting to dashboard...</span>
               </div>
             ) : (
               <button
@@ -108,19 +110,19 @@ export default function PricingPage() {
         {/* Business Model Clarification Note */}
         <div className="mt-12 bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-2xs space-y-4">
           <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-            <span>🛡️</span> How Payments & Settlements Work
+            <Shield className="w-5 h-5 text-rose-600" /> How Payments & Settlements Work
           </h2>
           <div className="grid sm:grid-cols-2 gap-4 text-xs text-gray-600 leading-relaxed">
             <div className="p-4 bg-gray-50 rounded-2xl">
               <h4 className="font-bold text-gray-900 mb-1">Direct Settlement to Your Bank</h4>
               <p>
-                UpStart integrates with authorized payment gateways (Razorpay / Cashfree route). When a couple pays a milestone, it settles directly into your designated bank account. UpStart never holds your money in its own accounts.
+                PaySnap integrates with authorized payment gateways (Razorpay / Cashfree route). When a couple pays a milestone, it settles directly into your designated bank account. PaySnap never holds your money in its own accounts.
               </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-2xl">
               <h4 className="font-bold text-gray-900 mb-1">Zero Commission Policy</h4>
               <p>
-                Unlike traditional marketplaces that take 15% to 25% of your wedding fee, UpStart is a pure software utility. You pay ₹99/month, and every single rupee of your ₹40,000 or ₹80,000 package stays yours.
+                Unlike traditional marketplaces that take 15% to 25% of your wedding fee, PaySnap is a pure software utility. You pay ₹99/month, and every single rupee of your ₹40,000 or ₹80,000 package stays yours.
               </p>
             </div>
           </div>
@@ -131,7 +133,7 @@ export default function PricingPage() {
           <h3 className="text-base font-bold text-gray-900">Photographer Subscription FAQs</h3>
 
           <div className="bg-white rounded-2xl p-4 border border-gray-200 text-xs">
-            <h4 className="font-bold text-gray-900 mb-1">Do couples pay anything to use UpStart?</h4>
+            <h4 className="font-bold text-gray-900 mb-1">Do couples pay anything to use PaySnap?</h4>
             <p className="text-gray-600">
               No. Couples use the platform completely free of charge. They simply pay your agreed package price in the 3 clear milestone phases.
             </p>
@@ -147,7 +149,7 @@ export default function PricingPage() {
           <div className="bg-white rounded-2xl p-4 border border-gray-200 text-xs">
             <h4 className="font-bold text-gray-900 mb-1">How does the 10 preview photo watermark work?</h4>
             <p className="text-gray-600">
-              When you upload the shoot, you pick 10 sample photos. UpStart renders a semi-transparent, centered watermark with your studio name and disables right-click/downloads. The client inspects quality and releases final payment with peace of mind.
+              When you upload the shoot, you pick 10 sample photos. PaySnap renders a semi-transparent, centered watermark with your studio name and disables right-click/downloads. The client inspects quality and releases final payment with peace of mind.
             </p>
           </div>
         </div>

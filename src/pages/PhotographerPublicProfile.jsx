@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StarRating from '../components/StarRating';
 import { useApp } from '../context/AppContext';
+import { Award, MapPin, ExternalLink, Phone, Camera, Package, Star, Search, Check } from 'lucide-react';
 
 export default function PhotographerPublicProfile() {
   const { id } = useParams();
@@ -53,7 +54,7 @@ export default function PhotographerPublicProfile() {
         {/* Founding Member Badge */}
         {photographer.founding_member && (
           <div className="absolute top-4 right-4 bg-amber-400 text-amber-950 font-extrabold text-xs tracking-wider px-3 py-1 rounded-full uppercase shadow-lg flex items-center gap-1.5">
-            <span>🏅</span> Founding Member Studio
+            <Award className="w-3.5 h-3.5" /> Founding Member Studio
           </div>
         )}
 
@@ -68,8 +69,11 @@ export default function PhotographerPublicProfile() {
               <h1 className="text-xl sm:text-3xl font-extrabold leading-tight">
                 {photographer.shop_name}
               </h1>
-              <p className="text-xs sm:text-sm text-rose-200 font-medium">
-                Lead: {photographer.owner_name} · 📍 {photographer.location.area}, Pune
+              <p className="text-xs sm:text-sm text-rose-200 font-medium flex items-center gap-1 mt-0.5">
+                <span>Lead: {photographer.owner_name}</span>
+                <span className="text-rose-300">·</span>
+                <MapPin className="w-3.5 h-3.5 text-rose-300 inline" />
+                <span>{photographer.location.area}, Pune</span>
               </p>
             </div>
           </div>
@@ -90,16 +94,16 @@ export default function PhotographerPublicProfile() {
               href={photographer.map_link}
               target="_blank"
               rel="noreferrer"
-              className="text-rose-600 font-semibold hover:underline flex items-center gap-1"
+              className="text-rose-600 font-semibold hover:underline flex items-center gap-1.5"
             >
-              <span>🗺️</span> View on Google Maps
+              <ExternalLink className="w-3.5 h-3.5" /> View on Google Maps
             </a>
             <span className="text-gray-300">|</span>
             <a
               href={`tel:${photographer.phone}`}
-              className="text-gray-600 font-semibold hover:text-rose-600 flex items-center gap-1"
+              className="text-gray-600 font-semibold hover:text-rose-600 flex items-center gap-1.5"
             >
-              <span>📞</span> +91 {photographer.phone}
+              <Phone className="w-3.5 h-3.5" /> +91 {photographer.phone}
             </a>
           </div>
 
@@ -108,7 +112,7 @@ export default function PhotographerPublicProfile() {
             onClick={handleBookClick}
             className="hidden sm:inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-sm shadow-md shadow-rose-900/20 transition cursor-pointer"
           >
-            <span>💍</span> Book Studio with Payment Shield →
+            Book Studio with Payment Shield →
           </button>
         </div>
       </div>
@@ -125,7 +129,7 @@ export default function PhotographerPublicProfile() {
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
-            <span>📸</span> Previous Work & Portfolio ({photographer.portfolio_images.length})
+            <Camera className="w-4 h-4" /> Previous Work & Portfolio ({photographer.portfolio_images.length})
           </button>
 
           <button
@@ -136,7 +140,7 @@ export default function PhotographerPublicProfile() {
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
-            <span>📦</span> Wedding Packages ({photographer.packages.length})
+            <Package className="w-4 h-4" /> Wedding Packages ({photographer.packages.length})
           </button>
 
           <button
@@ -147,7 +151,7 @@ export default function PhotographerPublicProfile() {
                 : 'border-transparent text-gray-500 hover:text-gray-800'
             }`}
           >
-            <span>⭐</span> Client Reviews ({photographer.reviews.length})
+            <Star className="w-4 h-4" /> Client Reviews ({photographer.reviews.length})
           </button>
         </div>
 
@@ -180,7 +184,9 @@ export default function PhotographerPublicProfile() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-sm font-semibold">
-                    🔍 View Full Resolution
+                    <span className="flex items-center gap-1.5 bg-black/50 px-3 py-1.5 rounded-xl backdrop-blur-xs">
+                      <Search className="w-4 h-4" /> View Full Resolution
+                    </span>
                   </div>
                 </div>
               ))}
@@ -218,13 +224,13 @@ export default function PhotographerPublicProfile() {
                   <ul className="space-y-2.5 text-xs text-gray-700 mb-6">
                     {pkg.items.map((item, i) => (
                       <li key={i} className="flex items-center gap-2">
-                        <span className="text-emerald-500 font-bold">✓</span>
-                        {item}
+                        <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <span>{item}</span>
                       </li>
                     ))}
                     <li className="flex items-center gap-2 text-rose-700 font-medium">
-                      <span className="text-rose-500 font-bold">✓</span>
-                      10 Demo Previews before final release
+                      <Check className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                      <span>10 Demo Previews before final release</span>
                     </li>
                   </ul>
                 </div>

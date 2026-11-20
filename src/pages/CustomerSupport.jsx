@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { faqs } from '../data/mockData';
+import { Lock, Camera, Shield, Check, Phone, Mail } from 'lucide-react';
 
 export default function CustomerSupport() {
   const [openFaq, setOpenFaq] = useState(0);
@@ -36,21 +37,27 @@ export default function CustomerSupport() {
         {/* 3 Pillar Guarantee Cards */}
         <div className="grid sm:grid-cols-3 gap-4">
           <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-2xs">
-            <span className="text-2xl block mb-2">🔒</span>
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl w-fit mb-3">
+              <Lock className="w-5 h-5" />
+            </div>
             <h3 className="font-bold text-sm text-gray-900">Locked Price Shield</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               Agreed shoot fees cannot be changed without mutual consent on the platform.
             </p>
           </div>
           <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-2xs">
-            <span className="text-2xl block mb-2">📸</span>
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl w-fit mb-3">
+              <Camera className="w-5 h-5" />
+            </div>
             <h3 className="font-bold text-sm text-gray-900">Photo Preview Quality</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               Inspect 10 sample watermarked previews before authorizing the final phase payment.
             </p>
           </div>
           <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-2xs">
-            <span className="text-2xl block mb-2">🛡️</span>
+            <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl w-fit mb-3">
+              <Shield className="w-5 h-5" />
+            </div>
             <h3 className="font-bold text-sm text-gray-900">Transparent Refunds</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
               Non-refundable fee fixed at ₹5,000. All additional advance payments returned if cancelled.
@@ -98,8 +105,8 @@ export default function CustomerSupport() {
 
           {submitted ? (
             <div className="p-8 text-center bg-emerald-50 rounded-2xl border border-emerald-200 space-y-3">
-              <div className="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
-                ✓
+              <div className="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto">
+                <Check className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-extrabold text-gray-900">Inquiry Submitted!</h3>
               <p className="text-xs text-gray-600 max-w-sm mx-auto">
@@ -186,11 +193,13 @@ export default function CustomerSupport() {
 
           {/* Quick Contacts */}
           <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-500">
-            <div>
-              📞 Support Helpline: <strong className="text-gray-800">1800-419-7878 (Toll Free, Pune)</strong>
+            <div className="flex items-center gap-1.5">
+              <Phone className="w-3.5 h-3.5 text-gray-600" />
+              <span>Support Helpline: <strong className="text-gray-800">1800-419-7878 (Toll Free, Pune)</strong></span>
             </div>
-            <div>
-              ✉️ Email Support: <strong className="text-gray-800">protection@upstart.in</strong>
+            <div className="flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-gray-600" />
+              <span>Email Support: <strong className="text-gray-800">protection@paysnap.in</strong></span>
             </div>
           </div>
         </div>

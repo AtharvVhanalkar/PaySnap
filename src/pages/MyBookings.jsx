@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
+import { Check, Calendar } from 'lucide-react';
 
 export default function MyBookings() {
   const { currentUser, getBookingsForCustomer, getPhotographer, getPhasesForBooking, formatINR } = useApp();
@@ -49,7 +50,7 @@ export default function MyBookings() {
                 : 'border-transparent text-gray-400 hover:text-gray-700'
             }`}
           >
-            <span>💍</span> Active Shoots ({activeBookings.length})
+            Active Shoots ({activeBookings.length})
           </button>
           <button
             onClick={() => setActiveTab('past')}
@@ -59,7 +60,7 @@ export default function MyBookings() {
                 : 'border-transparent text-gray-400 hover:text-gray-700'
             }`}
           >
-            <span>📜</span> Completed & Cancelled ({pastBookings.length})
+            Completed & Cancelled ({pastBookings.length})
           </button>
         </div>
 
@@ -128,7 +129,11 @@ export default function MyBookings() {
                                   : 'bg-gray-200 text-gray-600'
                               }`}
                             >
-                              {p.status === 'approved' ? '✓' : idx + 1}
+                              {p.status === 'approved' ? (
+                                <Check className="w-3 h-3" />
+                              ) : (
+                                idx + 1
+                              )}
                             </span>
                             <span className="hidden md:inline text-gray-600">
                               Phase {p.phase_number}
@@ -169,7 +174,7 @@ export default function MyBookings() {
           </div>
         ) : (
           <div className="text-center py-16 bg-white rounded-3xl border border-gray-200 p-8">
-            <span className="text-4xl block mb-2">📅</span>
+            <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-2" />
             <h3 className="text-lg font-bold text-gray-800">No {activeTab} bookings</h3>
             <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-sm mx-auto">
               Ready to safeguard your wedding shoot? Explore verified Pune studios and book with 3-phase milestones.
