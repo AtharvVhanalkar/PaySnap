@@ -155,7 +155,6 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <Logo size="sm" showBadge={false} />
-            <span>— Pune, Maharashtra</span>
           </div>
           <div className="flex gap-4">
             <Link to="/support" className="hover:text-rose-600">Cancellation Policy</Link>
