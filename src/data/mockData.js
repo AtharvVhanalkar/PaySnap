@@ -337,9 +337,11 @@ export const previewPhotos = [
 ];
 
 export const faqs = [
-  { q: 'How does the payment process work?', a: 'Payments are split into three phases: advance booking (30%), pre-event (40%), and final payment before photo delivery (30%). Each phase is tracked on the platform for full transparency.' },
+  { q: 'How does the payment process work?', a: 'Payments are split into clear milestone phases: advance booking, pre-event payment, and final delivery release. Each milestone is tracked on the platform for full transparency.' },
   { q: 'What if I want to cancel my booking?', a: 'You can cancel at any time. The non-refundable booking fee is retained, and all other amounts paid are refunded within 7 business days.' },
   { q: 'When do I receive my photos?', a: "After the final payment is approved, your full gallery is unlocked. You will see 10 watermarked preview photos before making the final payment." },
   { q: 'Is my payment information secure?', a: 'Yes. Payments go directly to the photographer through a secure payment gateway. We never store your card or bank details.' },
-  { q: 'Can I dispute a payment?', a: 'Yes. Use the Report a Problem option in Support to raise a dispute. Our team will review and respond within 48 hours.' },
+  { q: 'Can I dispute a payment or report an issue?', a: 'Yes. Use the Help & Developer Feedback option to report an issue or dispute. Our team investigates directly and responds within 24 hours.' },
+  { q: 'Can photographers customize the number of milestone phases and dates?', a: 'Yes. Photographers and clients can customize the number of phases (2, 3, 4, or more), specify exact payment due dates, and fine-tune individual milestone amounts.' },
+  { q: 'What happens if a milestone payment date passes without payment?', a: 'If a payment due date passes without payment and proof submission, an "Action Required" status alert appears on the customer\'s profile and booking card so both sides can quickly resolve pending dues.' },
 ];

@@ -38,12 +38,6 @@ export default function LandingPage() {
             >
               Find a Photographer in Pune →
             </Link>
-            <Link
-              to="/pricing"
-              className="px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/30 font-semibold text-white backdrop-blur-md transition text-center"
-            >
-              Photographers: Join for ₹99/mo
-            </Link>
           </div>
         </div>
       </section>
@@ -156,29 +150,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* For Photographers Callout */}
-      <section className="py-16 px-4 max-w-5xl mx-auto">
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-3xl p-8 sm:p-12 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="max-w-xl">
-            <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              For Professional Photographers
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold mt-3 leading-tight">
-              Founding Membership: ₹99/month. Zero Commission on Bookings.
-            </h2>
-            <p className="mt-3 text-amber-100 text-sm sm:text-base leading-relaxed">
-              Payments settle directly to your bank account via the payment gateway. We never hold your client funds, nor do we take a cut of your hard-earned shoot fees.
-            </p>
-          </div>
-          <Link
-            to="/pricing"
-            className="px-6 py-3.5 bg-white text-amber-900 font-extrabold rounded-2xl shadow-md hover:bg-amber-50 transition whitespace-nowrap text-center text-sm sm:text-base"
-          >
-            Explore Founding Plan →
-          </Link>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="mt-auto border-t border-rose-100 bg-white py-8 text-center text-xs text-gray-500">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -189,7 +160,7 @@ export default function LandingPage() {
           <div className="flex gap-4">
             <Link to="/support" className="hover:text-rose-600">Cancellation Policy</Link>
             <Link to="/pricing" className="hover:text-rose-600">Photographer Pricing</Link>
-            <Link to="/support" className="hover:text-rose-600">Customer FAQs</Link>
+            <Link to="/support" className="hover:text-rose-600">Help & FAQs</Link>
           </div>
           <p>© 2026 PaySnap. All rights reserved.</p>
         </div>

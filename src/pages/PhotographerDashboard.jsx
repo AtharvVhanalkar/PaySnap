@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
-import { Eye, Star, Check, Lock, AlertCircle, Clock } from 'lucide-react';
+import { Eye, Star, Check, Lock, AlertCircle, Clock, Sparkles } from 'lucide-react';
 
 export default function PhotographerDashboard() {
   const {
@@ -99,9 +99,31 @@ export default function PhotographerDashboard() {
               to="/pricing"
               className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 rounded-xl shadow-xs transition flex items-center gap-1.5"
             >
-              <Star className="w-3.5 h-3.5" /> Plans (₹99/mo · ₹1099/yr)
+              <Star className="w-3.5 h-3.5" /> Plans (₹99/mo · ₹999/yr)
             </Link>
           </div>
+        </div>
+
+        {/* Photographers Join for 99 Membership Banner */}
+        <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 rounded-3xl p-6 sm:p-7 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-1.5 max-w-2xl">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-black uppercase tracking-wider backdrop-blur-xs">
+              <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+              <span>Studio Membership</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white">
+              Photographers: Join for ₹99/month or ₹999/year
+            </h2>
+            <p className="text-xs sm:text-sm text-amber-100 leading-relaxed">
+              Zero commission on bookings. Payments settle directly into your bank account via secure gateway. Retain 100% of your wedding shoot revenues with locked agreements and milestone tracking.
+            </p>
+          </div>
+          <Link
+            to="/pricing"
+            className="px-6 py-3 bg-white text-amber-900 hover:bg-amber-50 font-black text-xs sm:text-sm rounded-xl shadow-md transition whitespace-nowrap self-stretch md:self-auto text-center"
+          >
+            Explore Plans (₹99/mo · ₹999/yr) →
+          </Link>
         </div>
 
         {/* Top Financial & Action Summary Cards */}

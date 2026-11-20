@@ -58,11 +58,11 @@ export default function PricingPage() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <span>Yearly Plan (₹1,099/yr)</span>
+              <span>Yearly Plan (₹999/yr)</span>
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-black uppercase ${
                 billingCycle === 'yearly' ? 'bg-amber-300 text-amber-950' : 'bg-emerald-100 text-emerald-800'
               }`}>
-                Save 15%
+                Save 16%
               </span>
             </button>
           </div>
@@ -82,9 +82,6 @@ export default function PricingPage() {
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-extrabold text-rose-600 uppercase tracking-wider">
                   Flexible Monthly
-                </span>
-                <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full">
-                  Cancel anytime
                 </span>
               </div>
 
@@ -109,7 +106,7 @@ export default function PricingPage() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span><strong>Watermarked 10 Preview Gallery:</strong> Full protection.</span>
+                  <span><strong>Watermarked 10 Preview Gallery:</strong> Full delivery protection.</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -140,7 +137,7 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* Plan 2: Yearly Founding Plan at ₹1,099 */}
+          {/* Plan 2: Yearly Founding Plan at ₹999 */}
           <div
             className={`bg-white rounded-3xl p-8 border-2 transition flex flex-col justify-between relative overflow-hidden ${
               billingCycle === 'yearly'
@@ -150,7 +147,7 @@ export default function PricingPage() {
           >
             {/* Top Ribbon */}
             <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-400 text-amber-950 font-black text-[11px] px-4 py-1 rounded-bl-2xl uppercase tracking-wider flex items-center gap-1 shadow-xs">
-              <Sparkles className="w-3.5 h-3.5" /> Best Value · 1 Year Lock
+              <Sparkles className="w-3.5 h-3.5" /> Best Value · Annual Studio Pass
             </div>
 
             <div>
@@ -164,14 +161,14 @@ export default function PricingPage() {
               <p className="text-xs text-gray-500 mt-1">Full 12-month coverage for full-time wedding photographers</p>
 
               <div className="mt-6 flex items-baseline gap-2 pb-6 border-b border-gray-100">
-                <span className="text-5xl font-black text-rose-600">₹1,099</span>
+                <span className="text-5xl font-black text-rose-600">₹999</span>
                 <span className="text-gray-500 font-bold text-sm">/ year</span>
-                <span className="text-xs text-gray-400 line-through ml-2">₹3,588/yr</span>
+                <span className="text-xs text-gray-400 line-through ml-2">₹1,188/yr</span>
               </div>
 
               <div className="mt-2 inline-flex items-center gap-1.5 text-xs text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Effective ~₹91/mo · Save ₹89 instantly vs monthly</span>
+                <span>Effective ~₹83/mo · Save ₹189 instantly vs monthly</span>
               </div>
 
               {/* Value Props */}
@@ -198,7 +195,7 @@ export default function PricingPage() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span><strong>Rate Locked for Life:</strong> Renews at ₹1,099/yr forever.</span>
+                  <span><strong>Rate Locked for Life:</strong> Renews at ₹999/yr forever.</span>
                 </div>
               </div>
             </div>
@@ -216,7 +213,7 @@ export default function PricingPage() {
                   className="w-full py-3.5 bg-gradient-to-r from-rose-600 via-rose-700 to-amber-700 hover:from-rose-700 hover:to-amber-800 text-white font-black text-sm rounded-2xl shadow-lg shadow-rose-900/20 transition cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4 text-amber-300" />
-                  <span>Start Yearly Plan (₹1,099/yr) →</span>
+                  <span>Start Yearly Plan (₹999/yr) →</span>
                 </button>
               )}
             </div>
@@ -238,7 +235,7 @@ export default function PricingPage() {
             <div className="p-4 bg-gray-50 rounded-2xl">
               <h4 className="font-bold text-gray-900 mb-1">Zero Commission Policy</h4>
               <p>
-                Unlike traditional marketplaces that take 15% to 25% of your wedding fee, PaySnap is a pure software utility. You pay ₹99/month or ₹1,099/year, and every single rupee of your shoot package stays yours.
+                Unlike traditional marketplaces that take 15% to 25% of your wedding fee, PaySnap is a pure software utility. You pay ₹99/month or ₹999/year, and every single rupee of your shoot package stays yours.
               </p>
             </div>
           </div>
@@ -251,7 +248,7 @@ export default function PricingPage() {
           <div className="bg-white rounded-2xl p-4 border border-gray-200 text-xs">
             <h4 className="font-bold text-gray-900 mb-1">What is the difference between Monthly and Yearly plans?</h4>
             <p className="text-gray-600">
-              The Monthly plan is ₹99/month, offering full flexibility with month-to-month cancellation. The Yearly plan is ₹1,099/year (~₹91/mo effective), locking in your founding price for a full 12 months with priority Pune search listing and savings of ₹89.
+              The Monthly plan is ₹99/month. The Yearly plan is ₹999/year (~₹83/mo effective), locking in your founding price for a full 12 months with priority Pune search listing and savings of ₹189.
             </p>
           </div>
 

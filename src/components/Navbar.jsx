@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Search, Calendar, User, Shield, BarChart3, Eye, Star, LogOut } from 'lucide-react';
+import { Search, Calendar, User, Shield, BarChart3, Eye, Star, LogOut, HelpCircle, Send, Check, X, Code } from 'lucide-react';
 import Logo from './Logo';
 
 export default function Navbar() {
@@ -10,10 +10,28 @@ export default function Navbar() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Help & Developer Feedback Modal state
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
+  const [devFeedbackForm, setDevFeedbackForm] = useState({
+    name: currentUser?.type === 'customer' ? 'Priya Mehta' : 'Rahul Sharma',
+    email: currentUser?.type === 'customer' ? 'priya.mehta@email.com' : 'rahul@capturedmoments.in',
+    category: 'Bug / Technical Issue',
+    message: '',
+  });
+  const [devFeedbackSuccess, setDevFeedbackSuccess] = useState(false);
+  const [ticketNumber, setTicketNumber] = useState('');
+
   const handleLogout = () => {
     logout();
     navigate('/');
     setMenuOpen(false);
+  };
+
+  const handleSendDevFeedback = (e) => {
+    e.preventDefault();
+    const generated = 'DEV-' + Math.floor(100000 + Math.random() * 900000);
+    setTicketNumber(generated);
+    setDevFeedbackSuccess(true);
   };
 
   const user = currentUser?.type === 'customer'
@@ -46,7 +64,7 @@ export default function Navbar() {
                 My Bookings
               </Link>
               <Link to="/support" className={`hover:text-rose-600 transition ${location.pathname === '/support' ? 'text-rose-600 font-bold' : ''}`}>
-                Support & Protection
+                Help & FAQs
               </Link>
             </>
           ) : currentUser?.type === 'photographer' ? (
@@ -55,7 +73,10 @@ export default function Navbar() {
                 Photographer Dashboard
               </Link>
               <Link to="/pricing" className={`hover:text-rose-600 transition ${location.pathname === '/pricing' ? 'text-rose-600 font-bold' : ''}`}>
-                Founding Membership
+                Founding Membership (₹999/yr)
+              </Link>
+              <Link to="/support" className={`hover:text-rose-600 transition ${location.pathname === '/support' ? 'text-rose-600 font-bold' : ''}`}>
+                Help & FAQs
               </Link>
             </>
           ) : (
@@ -64,17 +85,31 @@ export default function Navbar() {
                 Browse Photographers
               </Link>
               <Link to="/pricing" className="hover:text-rose-600 transition">
-                For Photographers (₹99/mo)
+                Pricing (₹999/yr)
               </Link>
               <Link to="/support" className="hover:text-rose-600 transition">
-                Payment Protection
+                Help & FAQs
               </Link>
             </>
           )}
         </div>
 
-        {/* Right Action Profile / Auth */}
+        {/* Right Action: Help Button & Profile / Auth */}
         <div className="flex items-center gap-3">
+          {/* Help button that triggers Send Feedback/Issue to Developer Team */}
+          <button
+            type="button"
+            onClick={() => {
+              setDevFeedbackSuccess(false);
+              setHelpModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 text-xs font-bold transition cursor-pointer shadow-2xs"
+            title="Need help? Click to send feedback or report issue to our developer team"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>Help</span>
+          </button>
+
           {currentUser ? (
             <div className="relative">
               <button
@@ -113,7 +148,7 @@ export default function Navbar() {
                         <User className="w-4 h-4 text-gray-500" /> My Profile
                       </Link>
                       <Link to="/support" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                        <Shield className="w-4 h-4 text-gray-500" /> Help & Cancellation Policy
+                        <Shield className="w-4 h-4 text-gray-500" /> Help & Dispute Center
                       </Link>
                     </>
                   )}
@@ -127,7 +162,10 @@ export default function Navbar() {
                         <Eye className="w-4 h-4 text-gray-500" /> View My Public Profile
                       </Link>
                       <Link to="/pricing" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
-                        <Star className="w-4 h-4 text-gray-500" /> Founding Plan (₹99/mo)
+                        <Star className="w-4 h-4 text-gray-500" /> Founding Plan (₹999/yr)
+                      </Link>
+                      <Link to="/support" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 hover:bg-rose-50">
+                        <HelpCircle className="w-4 h-4 text-gray-500" /> Help & Developer Feedback
                       </Link>
                     </>
                   )}
@@ -161,6 +199,141 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Interactive Help & Developer Team Feedback Modal */}
+      {helpModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in-50">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="p-2 bg-rose-100 text-rose-700 rounded-xl">
+                  <Code className="w-4 h-4" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-black text-gray-900">
+                    Send Feedback or Issue to Developer Team
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Direct line to PaySnap engineering for bug fixes and feedback.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHelpModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg font-bold"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {devFeedbackSuccess ? (
+              <div className="p-6 text-center bg-emerald-50 rounded-2xl border border-emerald-200 space-y-3">
+                <div className="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
+                  <Check className="w-6 h-6" />
+                </div>
+                <h4 className="text-base font-black text-gray-900">
+                  Message Delivered to Developer Team!
+                </h4>
+                <p className="text-xs text-gray-600 max-w-sm mx-auto leading-relaxed">
+                  Thank you! Your ticket <strong className="font-mono text-emerald-800">#{ticketNumber}</strong> has been forwarded directly to our engineering desk. A developer will investigate and follow up with you.
+                </p>
+                <div className="pt-2 flex justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setHelpModalOpen(false)}
+                    className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs"
+                  >
+                    Done
+                  </button>
+                  <Link
+                    to="/support"
+                    onClick={() => setHelpModalOpen(false)}
+                    className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50"
+                  >
+                    View FAQs
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSendDevFeedback} className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={devFeedbackForm.name}
+                      onChange={(e) => setDevFeedbackForm({ ...devFeedbackForm, name: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-semibold focus:outline-hidden focus:border-rose-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={devFeedbackForm.email}
+                      onChange={(e) => setDevFeedbackForm({ ...devFeedbackForm, email: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-semibold focus:outline-hidden focus:border-rose-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={devFeedbackForm.category}
+                    onChange={(e) => setDevFeedbackForm({ ...devFeedbackForm, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-semibold bg-white focus:outline-hidden focus:border-rose-500"
+                  >
+                    <option value="Bug / Technical Issue">Bug / Technical Glitch</option>
+                    <option value="Payment / Gateway Issue">Payment & Escrow Milestone Issue</option>
+                    <option value="Feature Suggestion">Feature Suggestion for Developers</option>
+                    <option value="General Feedback">General Feedback</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Issue Description / Developer Feedback
+                  </label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={devFeedbackForm.message}
+                    onChange={(e) => setDevFeedbackForm({ ...devFeedbackForm, message: e.target.value })}
+                    placeholder="Describe the issue, what happened, or your thoughts for the developer team..."
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-medium focus:outline-hidden focus:border-rose-500"
+                  ></textarea>
+                </div>
+
+                <div className="pt-2 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setHelpModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-900/20 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Send to Developer Team
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
