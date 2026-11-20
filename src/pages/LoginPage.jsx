@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Logo from '../components/Logo';
 import { useApp } from '../context/AppContext';
-import { Camera, User, Zap, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useApp();
 
-  const initialRole = searchParams.get('tab') === 'photographer' ? 'photographer' : 'customer';
-  const [role, setRole] = useState(initialRole);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const isStudio = searchParams.get('tab') === 'photographer';
+  const [isSignUp, setIsSignUp] = useState(isStudio);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get('tab') === 'photographer') {
-      setRole('photographer');
+    if (isStudio) {
+      setIsSignUp(true);
+    } else {
+      setIsSignUp(false);
     }
-  }, [searchParams]);
+  }, [isStudio]);
 
   // Customer state
   const [customerForm, setCustomerForm] = useState({
@@ -59,144 +61,92 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg bg-white rounded-3xl shadow-sm border border-rose-100 p-6 sm:p-8">
           {/* Header */}
-          <div className="text-center mb-6">
-            <div className="inline-flex p-3 rounded-2xl bg-rose-50 text-rose-600 mb-2">
-              <Camera className="w-7 h-7" />
-            </div>
-            <h1 className="text-2xl font-extrabold text-gray-900 mt-2">Welcome to PaySnap</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Select your role to access your personalized portal
+          <div className="text-center mb-6 flex flex-col items-center">
+            <Logo size="lg" showBadge={false} className="mb-2" />
+            <h1 className="text-2xl font-extrabold text-gray-900 mt-2">
+              {isStudio
+                ? isSignUp
+                  ? 'Join as Studio'
+                  : 'Studio Sign In'
+                : isSignUp
+                ? 'Create Client Account'
+                : 'Welcome Back'}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-sm">
+              {isStudio
+                ? isSignUp
+                  ? 'Register your studio profile and start accepting 3-phase protected wedding shoots'
+                  : 'Sign in to manage your active shoots, milestones and gateway settlements'
+                : isSignUp
+                ? 'Create an account to book verified Pune photographers with guaranteed deliverables'
+                : 'Sign in to access your wedding bookings, demo previews and milestones'}
             </p>
           </div>
 
-          {/* Role Switcher Tabs */}
-          <div className="grid grid-cols-2 p-1.5 bg-[#fdf8f3] rounded-2xl border border-rose-100 mb-6">
-            <button
-              type="button"
-              onClick={() => setRole('customer')}
-              className={`py-2.5 text-xs sm:text-sm font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
-                role === 'customer'
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <User className="w-4 h-4" /> Customer / Bride & Groom
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('photographer')}
-              className={`py-2.5 text-xs sm:text-sm font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-2 ${
-                role === 'photographer'
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Camera className="w-4 h-4" /> Studio / Photographer
-            </button>
-          </div>
-
-          {/* Sign In vs Sign Up Toggle */}
+          {/* Mode Switcher Tabs */}
           <div className="flex justify-center items-center gap-6 text-sm mb-6 pb-4 border-b border-gray-100 font-semibold">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(false)}
-              className={`pb-1 border-b-2 transition cursor-pointer ${
-                !isSignUp
-                  ? 'border-rose-600 text-rose-600 font-bold'
-                  : 'border-transparent text-gray-400 hover:text-gray-700'
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsSignUp(true)}
-              className={`pb-1 border-b-2 transition cursor-pointer ${
-                isSignUp
-                  ? 'border-rose-600 text-rose-600 font-bold'
-                  : 'border-transparent text-gray-400 hover:text-gray-700'
-              }`}
-            >
-              Create Account
-            </button>
+            {isStudio ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(true)}
+                  className={`pb-1 border-b-2 transition cursor-pointer ${
+                    isSignUp
+                      ? 'border-rose-600 text-rose-600 font-bold'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                  }`}
+                >
+                  Join as Studio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(false)}
+                  className={`pb-1 border-b-2 transition cursor-pointer ${
+                    !isSignUp
+                      ? 'border-rose-600 text-rose-600 font-bold'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                  }`}
+                >
+                  Studio Sign In
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(false)}
+                  className={`pb-1 border-b-2 transition cursor-pointer ${
+                    !isSignUp
+                      ? 'border-rose-600 text-rose-600 font-bold'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(true)}
+                  className={`pb-1 border-b-2 transition cursor-pointer ${
+                    isSignUp
+                      ? 'border-rose-600 text-rose-600 font-bold'
+                      : 'border-transparent text-gray-400 hover:text-gray-700'
+                  }`}
+                >
+                  Create Account
+                </button>
+              </>
+            )}
           </div>
 
-          {/* Customer Form */}
-          {role === 'customer' && (
-            <form onSubmit={handleCustomerSubmit} className="space-y-4">
-              {isSignUp && (
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                    Your Full Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={customerForm.name}
-                    onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                    placeholder="e.g. Priya Mehta"
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                  Email or Phone Number
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={customerForm.emailOrPhone}
-                  onChange={(e) => setCustomerForm({ ...customerForm, emailOrPhone: e.target.value })}
-                  placeholder="priya.mehta@email.com or 9876543210"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Password
-                  </label>
-                  {!isSignUp && (
-                    <button
-                      type="button"
-                      onClick={() => setForgotPasswordOpen(true)}
-                      className="text-xs text-rose-600 hover:underline cursor-pointer"
-                    >
-                      Forgot password?
-                    </button>
-                  )}
-                </div>
-                <input
-                  type="password"
-                  required
-                  value={customerForm.password}
-                  onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-900/20 transition cursor-pointer"
-              >
-                {isSignUp ? 'Create Customer Account & Explore' : 'Sign In as Customer'}
-              </button>
-            </form>
-          )}
-
-          {/* Photographer Form */}
-          {role === 'photographer' && (
+          {/* Studio Forms */}
+          {isStudio ? (
             <form onSubmit={handlePhotographerSubmit} className="space-y-4">
               {isSignUp ? (
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                        Shop Name
+                        Shop / Studio Name
                       </label>
                       <input
                         type="text"
@@ -297,14 +247,14 @@ export default function LoginPage() {
                 <>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-                      Photographer Email or Phone
+                      Studio Email or Phone
                     </label>
                     <input
                       type="text"
                       required
                       value={photoForm.email}
                       onChange={(e) => setPhotoForm({ ...photoForm, email: e.target.value })}
-                      placeholder="rahul@capturedmoments.in"
+                      placeholder="rahul@capturedmoments.in or 9876543210"
                       className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
                     />
                   </div>
@@ -336,42 +286,95 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-900/20 transition cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-900/20 transition cursor-pointer"
               >
                 {isSignUp ? 'Register Studio Profile & Start' : 'Sign In to Studio Dashboard'}
               </button>
+
+              <div className="text-center pt-3 border-t border-gray-100">
+                <Link
+                  to="/login"
+                  className="text-xs text-gray-500 hover:text-rose-600 font-medium"
+                >
+                  Looking for wedding photography? <strong className="text-rose-600">Client Sign In →</strong>
+                </Link>
+              </div>
+            </form>
+          ) : (
+            /* Customer Form */
+            <form onSubmit={handleCustomerSubmit} className="space-y-4">
+              {isSignUp && (
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Your Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customerForm.name}
+                    onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                    placeholder="e.g. Priya Mehta"
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                  Email or Phone Number
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={customerForm.emailOrPhone}
+                  onChange={(e) => setCustomerForm({ ...customerForm, emailOrPhone: e.target.value })}
+                  placeholder="priya.mehta@email.com or 9876543210"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Password
+                  </label>
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={() => setForgotPasswordOpen(true)}
+                      className="text-xs text-rose-600 hover:underline cursor-pointer"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={customerForm.password}
+                  onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-hidden focus:border-rose-500 text-sm"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-md shadow-rose-900/20 transition cursor-pointer"
+              >
+                {isSignUp ? 'Create Customer Account & Explore' : 'Sign In as Client'}
+              </button>
+
+              <div className="text-center pt-3 border-t border-gray-100">
+                <Link
+                  to="/login?tab=photographer"
+                  className="text-xs text-gray-500 hover:text-rose-600 font-medium"
+                >
+                  Are you a professional photographer? <strong className="text-rose-600">Join as Studio →</strong>
+                </Link>
+              </div>
             </form>
           )}
-
-          {/* Quick Demo Shortcuts Card */}
-          <div className="mt-8 pt-6 border-t border-gray-100 bg-[#fdf8f3] -mx-6 -mb-6 p-6 rounded-b-3xl">
-            <p className="text-xs font-bold uppercase tracking-wider text-amber-800 text-center mb-3 flex items-center justify-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-600" /> 1-Click Demo Evaluation Sign In
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => { login('customer', 'c1'); navigate('/dashboard'); }}
-                className="py-2.5 px-3 rounded-xl bg-white border border-rose-200 hover:border-rose-400 text-xs font-bold text-gray-800 shadow-2xs text-left cursor-pointer transition hover:bg-rose-50/50"
-              >
-                <div className="flex items-center gap-1.5 text-rose-600 font-extrabold">
-                  <User className="w-3.5 h-3.5" /> Customer
-                </div>
-                <div className="text-[11px] text-gray-500 font-normal truncate">Priya Mehta (Active Bookings)</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { login('photographer', 'p1'); navigate('/photographer-dashboard'); }}
-                className="py-2.5 px-3 rounded-xl bg-white border border-rose-200 hover:border-rose-400 text-xs font-bold text-gray-800 shadow-2xs text-left cursor-pointer transition hover:bg-rose-50/50"
-              >
-                <div className="flex items-center gap-1.5 text-amber-700 font-extrabold">
-                  <Camera className="w-3.5 h-3.5" /> Photographer
-                </div>
-                <div className="text-[11px] text-gray-500 font-normal truncate">Rahul (Captured Moments)</div>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -387,7 +390,7 @@ export default function LoginPage() {
             {forgotSuccess ? (
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs mb-4 flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Reset link has been dispatched to your email (simulated for demo).</span>
+                <span>Reset link has been dispatched to your email.</span>
               </div>
             ) : (
               <div className="space-y-3 mb-4">

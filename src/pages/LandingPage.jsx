@@ -1,13 +1,10 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useApp } from '../context/AppContext';
-import { Sparkles, Zap, AlertTriangle, X, Shield, Check, Camera } from 'lucide-react';
+import Logo from '../components/Logo';
+import { Sparkles, AlertTriangle, X, Shield, Check } from 'lucide-react';
 
 export default function LandingPage() {
-  const { login } = useApp();
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-[#fdf8f3] text-gray-800 flex flex-col">
       <Navbar />
@@ -47,25 +44,6 @@ export default function LandingPage() {
             >
               Photographers: Join for ₹99/mo
             </Link>
-          </div>
-
-          {/* Quick Demo Launchers */}
-          <div className="mt-12 p-3 bg-black/40 rounded-2xl border border-white/10 backdrop-blur-md flex flex-wrap items-center justify-center gap-3 text-xs">
-            <span className="text-rose-200 font-semibold flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-400" /> Quick Interactive Demo:
-            </span>
-            <button
-              onClick={() => { login('customer', 'c1'); navigate('/dashboard'); }}
-              className="px-3 py-1.5 rounded-lg bg-rose-500/80 hover:bg-rose-500 text-white font-medium cursor-pointer transition"
-            >
-              Test as Bride/Client (Priya)
-            </button>
-            <button
-              onClick={() => { login('photographer', 'p1'); navigate('/photographer-dashboard'); }}
-              className="px-3 py-1.5 rounded-lg bg-amber-500/80 hover:bg-amber-500 text-white font-medium cursor-pointer transition"
-            >
-              Test as Studio Owner (Rahul)
-            </button>
           </div>
         </div>
       </section>
@@ -205,10 +183,7 @@ export default function LandingPage() {
       <footer className="mt-auto border-t border-rose-100 bg-white py-8 text-center text-xs text-gray-500">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="p-1 bg-rose-50 text-rose-600 rounded-lg">
-              <Camera className="w-4 h-4" />
-            </span>
-            <span className="font-bold text-gray-800 text-sm">PaySnap Wedding Platform</span>
+            <Logo size="sm" showBadge={false} />
             <span>— Pune, Maharashtra</span>
           </div>
           <div className="flex gap-4">
@@ -216,7 +191,7 @@ export default function LandingPage() {
             <Link to="/pricing" className="hover:text-rose-600">Photographer Pricing</Link>
             <Link to="/support" className="hover:text-rose-600">Customer FAQs</Link>
           </div>
-          <p>© 2026 PaySnap. Live Interactive Demo.</p>
+          <p>© 2026 PaySnap. All rights reserved.</p>
         </div>
       </footer>
     </div>
