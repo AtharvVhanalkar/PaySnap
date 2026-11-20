@@ -118,8 +118,63 @@ export function AppProvider({ children }) {
   };
 
   const addBooking = (booking, newPhases) => {
-    setBookings(prev => [...prev, booking]);
+    setBookings(prev => [booking, ...prev]);
     setPhases(prev => [...prev, ...newPhases]);
+  };
+
+  const approveBooking = (bookingId) => {
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'active' } : b));
+    setPhases(prev => {
+      const targetPhases = prev.filter(p => p.booking_id === bookingId);
+      let updated = prev.map(p => {
+        if (p.booking_id === bookingId && p.phase_number === 1) {
+          return { ...p, status: 'approved', paid_date: new Date().toISOString().slice(0, 10) };
+        }
+        return p;
+      });
+
+      // If there's only 1 phase (just the booking fee), auto-generate milestone phases 2 & 3 for the remaining balance
+      const currentBooking = bookings.find(b => b.id === bookingId);
+      if (currentBooking && targetPhases.length === 1) {
+        const remaining = Math.max(0, currentBooking.deal_price - (targetPhases[0]?.amount || 5000));
+        const p2Amount = Math.round(remaining * 0.6);
+        const p3Amount = remaining - p2Amount;
+        const now = new Date();
+        const p2Date = new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const p3Date = new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+        const phase2 = {
+          id: 'pp_' + Date.now() + '_2',
+          booking_id: bookingId,
+          phase_number: 2,
+          name: 'Pre-Event Shoot Payment',
+          amount: p2Amount,
+          due_date: p2Date,
+          paid_date: null,
+          status: 'pending',
+          proof_screenshot_url: null,
+          edit_history: [],
+        };
+        const phase3 = {
+          id: 'pp_' + Date.now() + '_3',
+          booking_id: bookingId,
+          phase_number: 3,
+          name: 'Final Delivery & Album Release',
+          amount: p3Amount,
+          due_date: p3Date,
+          paid_date: null,
+          status: 'pending',
+          proof_screenshot_url: null,
+          edit_history: [],
+        };
+        updated = [...updated, phase2, phase3];
+      }
+      return updated;
+    });
+  };
+
+  const rejectBooking = (bookingId, reason) => {
+    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'rejected', reject_reason: reason } : b));
   };
 
   const cancelBooking = (bookingId) => {
@@ -141,7 +196,7 @@ export function AppProvider({ children }) {
       getBookingsForCustomer, getBookingsForPhotographer, getPhasesForBooking,
       isPhaseOverdue, hasOverduePhase, getOverduePhasesForBooking,
       addPhase, deletePhase, setBookingPhases,
-      approvePhase, rejectPhase, updatePhase, submitPaymentProof, addBooking, cancelBooking,
+      approvePhase, rejectPhase, updatePhase, submitPaymentProof, addBooking, approveBooking, rejectBooking, cancelBooking,
       formatINR,
     }}>
       {children}

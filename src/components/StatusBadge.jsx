@@ -13,11 +13,13 @@ export default function StatusBadge({ status, className = '' }) {
     cancelled: 'bg-red-100 text-red-700 border-red-200',
     rejected: 'bg-red-100 text-red-700 border-red-200',
     active: 'bg-blue-50 text-blue-700 border-blue-200',
+    pending_approval: 'bg-purple-100 text-purple-800 border-purple-200 font-bold',
   };
 
   const labelMap = {
     action_required: 'Action Required',
     submitted: 'Proof Submitted',
+    pending_approval: 'Pending Approval',
   };
 
   const label = labelMap[status] || status?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());

@@ -1,10 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import { useApp } from '../context/AppContext';
 import { previewPhotos } from '../data/mockData';
-import { Phone, Mail, Check, Clock, FileText, Edit3, Folder, Cloud, AlertCircle, Plus, Trash2, Calendar, ShieldAlert } from 'lucide-react';
+import {
+  Phone,
+  Mail,
+  Check,
+  Clock,
+  FileText,
+  Edit3,
+  Folder,
+  Cloud,
+  AlertCircle,
+  Plus,
+  Trash2,
+  Calendar,
+  ShieldAlert,
+  Sliders,
+  Sparkles,
+  CheckCircle,
+  X,
+  Eye,
+  DollarSign,
+  ShieldCheck,
+} from 'lucide-react';
 
 export default function PhotographerCustomerDetail() {
   const { bookingId } = useParams();
@@ -13,11 +34,10 @@ export default function PhotographerCustomerDetail() {
     getCustomer,
     getPhotographer,
     getPhasesForBooking,
+    setBookingPhases,
     approvePhase,
     rejectPhase,
-    updatePhase,
-    addPhase,
-    deletePhase,
+    approveBooking,
     isPhaseOverdue,
     hasOverduePhase,
     formatINR,
@@ -25,17 +45,49 @@ export default function PhotographerCustomerDetail() {
 
   const booking = getBooking(bookingId);
 
-  // Edit phase modal/form state
-  const [editingPhaseId, setEditingPhaseId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', amount: '', due_date: '' });
+  // Local state for interactive milestone schedule customizer
+  const initialPhases = booking ? getPhasesForBooking(booking.id) : [];
+  const [phasesList, setPhasesList] = useState([]);
+  const [saveToast, setSaveToast] = useState(false);
 
-  // Add new phase modal state
-  const [showAddPhaseModal, setShowAddPhaseModal] = useState(false);
-  const [newPhaseForm, setNewPhaseForm] = useState({
-    name: 'Additional Milestone',
-    amount: '',
-    due_date: '2026-12-15',
-  });
+  // Sync initial phases when booking loads
+  useEffect(() => {
+    if (booking) {
+      const currentPhases = getPhasesForBooking(booking.id);
+      if (currentPhases.length > 0) {
+        setPhasesList(currentPhases);
+      } else {
+        // Generate default 3 phases if none exist
+        const p1 = 5000;
+        const rem = Math.max(0, booking.deal_price - p1);
+        const p2 = Math.round(rem * 0.5);
+        const p3 = rem - p2;
+        setPhasesList([
+          {
+            id: 'pp_' + Date.now() + '_1',
+            name: 'Phase 1: Booking Token (Non-Refundable)',
+            amount: p1,
+            due_date: new Date().toISOString().slice(0, 10),
+            status: booking.status === 'active' ? 'approved' : 'submitted',
+          },
+          {
+            id: 'pp_' + Date.now() + '_2',
+            name: 'Phase 2: Pre-Event Payment',
+            amount: p2,
+            due_date: '2026-12-20',
+            status: 'pending',
+          },
+          {
+            id: 'pp_' + Date.now() + '_3',
+            name: 'Phase 3: Final Delivery & Album Release',
+            amount: p3,
+            due_date: '2027-01-05',
+            status: 'pending',
+          },
+        ]);
+      }
+    }
+  }, [bookingId, booking?.status]);
 
   // Reject modal state
   const [rejectModalPhaseId, setRejectModalPhaseId] = useState(null);
@@ -66,70 +118,171 @@ export default function PhotographerCustomerDetail() {
 
   const customer = getCustomer(booking.customer_id);
   const photographer = getPhotographer(booking.photographer_id);
-  const phases = getPhasesForBooking(booking.id);
+  const dealPrice = booking.deal_price;
 
-  const totalPaid = phases
-    .filter((p) => p.status === 'approved')
-    .reduce((sum, p) => sum + p.amount, 0);
+  // Milestone Presets (2, 3, 4 phases)
+  const applyPresetPhases = (count) => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    // Keep booking fee if already paid
+    const p1Amount = phasesList[0]?.amount || 5000;
+    const remaining = Math.max(0, dealPrice - p1Amount);
 
-  const totalScheduled = phases.reduce((sum, p) => sum + p.amount, 0);
-  const allocationDifference = booking.deal_price - totalScheduled;
-  const remainingBalance = Math.max(0, booking.deal_price - totalPaid);
-
-  const isBookingOverdue = hasOverduePhase(booking.id);
-
-  const startEditPhase = (phase) => {
-    setEditingPhaseId(phase.id);
-    setEditForm({
-      name: phase.name,
-      amount: phase.amount.toString(),
-      due_date: phase.due_date,
-    });
-  };
-
-  const handleSavePhaseEdit = (e) => {
-    e.preventDefault();
-    if (!editingPhaseId) return;
-    updatePhase(editingPhaseId, {
-      name: editForm.name,
-      amount: Number(editForm.amount),
-      due_date: editForm.due_date,
-    });
-    setEditingPhaseId(null);
-  };
-
-  const handleAddCustomPhase = (e) => {
-    e.preventDefault();
-    if (!newPhaseForm.name || !newPhaseForm.amount || !newPhaseForm.due_date) return;
-    addPhase(booking.id, {
-      name: newPhaseForm.name,
-      amount: Number(newPhaseForm.amount),
-      due_date: newPhaseForm.due_date,
-      status: 'pending',
-      paid_date: null,
-      proof_screenshot_url: null,
-    });
-    setShowAddPhaseModal(false);
-    setNewPhaseForm({
-      name: 'Additional Milestone',
-      amount: '',
-      due_date: '2026-12-15',
-    });
-  };
-
-  const handleDeletePhase = (phaseId) => {
-    if (confirm('Are you sure you want to remove this milestone phase?')) {
-      deletePhase(phaseId);
+    if (count === 2) {
+      setPhasesList([
+        {
+          id: phasesList[0]?.id || 'pp_1',
+          name: 'Phase 1: Advance Booking (50%)',
+          amount: Math.round(dealPrice * 0.5),
+          due_date: todayStr,
+          status: phasesList[0]?.status || 'pending',
+          proof_screenshot_url: phasesList[0]?.proof_screenshot_url,
+        },
+        {
+          id: phasesList[1]?.id || 'pp_2_' + Date.now(),
+          name: 'Phase 2: Final Delivery (50%)',
+          amount: dealPrice - Math.round(dealPrice * 0.5),
+          due_date: '2027-01-05',
+          status: 'pending',
+        },
+      ]);
+    } else if (count === 3) {
+      const p1 = Math.round(dealPrice * 0.3);
+      const p2 = Math.round(dealPrice * 0.4);
+      setPhasesList([
+        {
+          id: phasesList[0]?.id || 'pp_1',
+          name: 'Phase 1: Advance Booking (30%)',
+          amount: p1,
+          due_date: todayStr,
+          status: phasesList[0]?.status || 'pending',
+          proof_screenshot_url: phasesList[0]?.proof_screenshot_url,
+        },
+        {
+          id: phasesList[1]?.id || 'pp_2_' + Date.now(),
+          name: 'Phase 2: Pre-Event Payment (40%)',
+          amount: p2,
+          due_date: '2026-12-20',
+          status: 'pending',
+        },
+        {
+          id: phasesList[2]?.id || 'pp_3_' + Date.now(),
+          name: 'Phase 3: Final Delivery & Release (30%)',
+          amount: dealPrice - p1 - p2,
+          due_date: '2027-01-05',
+          status: 'pending',
+        },
+      ]);
+    } else if (count === 4) {
+      const q = Math.round(dealPrice * 0.25);
+      setPhasesList([
+        {
+          id: phasesList[0]?.id || 'pp_1',
+          name: 'Phase 1: Booking Confirmation (25%)',
+          amount: q,
+          due_date: todayStr,
+          status: phasesList[0]?.status || 'pending',
+          proof_screenshot_url: phasesList[0]?.proof_screenshot_url,
+        },
+        {
+          id: phasesList[1]?.id || 'pp_2_' + Date.now(),
+          name: 'Phase 2: Pre-Event Shoot (25%)',
+          amount: q,
+          due_date: '2026-12-15',
+          status: 'pending',
+        },
+        {
+          id: phasesList[2]?.id || 'pp_3_' + Date.now(),
+          name: 'Phase 3: Main Event Handover (25%)',
+          amount: q,
+          due_date: '2026-12-29',
+          status: 'pending',
+        },
+        {
+          id: phasesList[3]?.id || 'pp_4_' + Date.now(),
+          name: 'Phase 4: Final Album Delivery (25%)',
+          amount: dealPrice - 3 * q,
+          due_date: '2027-01-15',
+          status: 'pending',
+        },
+      ]);
     }
   };
 
-  const handleApprove = (phaseId) => {
-    approvePhase(phaseId);
+  const handleUpdatePhase = (index, field, value) => {
+    setPhasesList((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        [field]: field === 'amount' ? Math.max(0, Number(value) || 0) : value,
+      };
+      return updated;
+    });
   };
 
-  const handleReject = () => {
+  const handleAddPhase = () => {
+    const totalCurrent = phasesList.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const diff = Math.max(0, dealPrice - totalCurrent);
+    const newPhaseNum = phasesList.length + 1;
+    setPhasesList((prev) => [
+      ...prev,
+      {
+        id: 'pp_' + Date.now() + '_' + newPhaseNum,
+        name: `Phase ${newPhaseNum}: Milestone Payment`,
+        amount: diff > 0 ? diff : 10000,
+        due_date: '2027-01-10',
+        status: 'pending',
+      },
+    ]);
+  };
+
+  const handleRemovePhase = (index) => {
+    if (phasesList.length <= 1) return;
+    setPhasesList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveSchedule = () => {
+    setBookingPhases(booking.id, phasesList);
+    setSaveToast(true);
+    setTimeout(() => setSaveToast(false), 4000);
+  };
+
+  const totalPhasesAmount = phasesList.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+  const phaseDifference = dealPrice - totalPhasesAmount;
+
+  const totalPaid = phasesList
+    .filter((p) => p.status === 'approved')
+    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  const remainingBalance = Math.max(0, dealPrice - totalPaid);
+  const isBookingOverdue = hasOverduePhase(booking.id);
+  const isPendingApproval = booking.status === 'pending_approval';
+
+  const bookingProofScreenshot =
+    booking.booking_fee_screenshot ||
+    phasesList[0]?.proof_screenshot_url ||
+    'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800';
+
+  const handleApproveThisBooking = () => {
+    approveBooking(booking.id);
+  };
+
+  const handleApprovePhase = (phaseId) => {
+    approvePhase(phaseId);
+    setPhasesList((prev) =>
+      prev.map((p) =>
+        p.id === phaseId ? { ...p, status: 'approved', paid_date: new Date().toISOString().slice(0, 10) } : p
+      )
+    );
+  };
+
+  const handleRejectPhase = () => {
     if (!rejectModalPhaseId) return;
     rejectPhase(rejectModalPhaseId, rejectReason);
+    setPhasesList((prev) =>
+      prev.map((p) =>
+        p.id === rejectModalPhaseId ? { ...p, status: 'rejected', reject_reason: rejectReason } : p
+      )
+    );
     setRejectModalPhaseId(null);
   };
 
@@ -139,18 +292,6 @@ export default function PhotographerCustomerDetail() {
     setTimeout(() => setUploadToast(false), 3000);
   };
 
-  const togglePreviewSelection = (index) => {
-    setSelectedPreviews((prev) => {
-      if (prev.includes(index)) {
-        if (prev.length <= 1) return prev;
-        return prev.filter((i) => i !== index);
-      } else {
-        if (prev.length >= 10) return prev;
-        return [...prev, index];
-      }
-    });
-  };
-
   return (
     <div className="min-h-screen bg-[#fdf8f3] flex flex-col pb-16">
       <Navbar />
@@ -158,13 +299,67 @@ export default function PhotographerCustomerDetail() {
       <main className="max-w-5xl mx-auto px-4 py-8 w-full flex-1 space-y-8">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-          <Link to="/photographer-dashboard" className="hover:text-rose-600">Photographer Dashboard</Link>
+          <Link to="/photographer-dashboard" className="hover:text-rose-600">
+            Photographer Dashboard
+          </Link>
           <span>/</span>
-          <span className="text-gray-800">Customer: {customer?.name || 'Customer'}</span>
+          <span className="text-gray-800">Client Profile: {customer?.name || 'Customer'}</span>
         </div>
 
+        {/* Save Schedule Success Toast */}
+        {saveToast && (
+          <div className="p-4 bg-emerald-600 text-white rounded-2xl text-xs font-bold shadow-md flex items-center justify-between animate-fade-in">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-emerald-200" />
+              <span>Milestone schedule successfully updated and locked for {customer?.name}! Client can see new due dates.</span>
+            </div>
+            <button onClick={() => setSaveToast(false)} className="text-emerald-100 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* PENDING APPROVAL BANNER: When customer just paid 5000 booking fee */}
+        {isPendingApproval && (
+          <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-600 text-white rounded-3xl p-6 sm:p-7 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                <Sparkles className="w-8 h-8 text-amber-200" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="bg-amber-300 text-amber-950 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-2xs">
+                    New Booking Request
+                  </span>
+                  <h2 className="text-xl font-black">₹5,000 Booking Fee Paid</h2>
+                </div>
+                <p className="text-xs text-purple-100 leading-relaxed max-w-xl">
+                  {customer?.name} has paid the <strong>₹5,000 Non-Refundable Booking Fee</strong> to lock the date on <strong>{booking.event_date}</strong>. Review their payment screenshot and approve this booking.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+              <button
+                type="button"
+                onClick={() => setPreviewScreenshot(bookingProofScreenshot)}
+                className="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl backdrop-blur-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Eye className="w-4 h-4" /> View Screenshot
+              </button>
+              <button
+                type="button"
+                onClick={handleApproveThisBooking}
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                <Check className="w-4 h-4" /> Approve Booking Now
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Action Required Banner for Overdue Payment */}
-        {isBookingOverdue && (
+        {isBookingOverdue && !isPendingApproval && (
           <div className="bg-gradient-to-r from-red-600 via-rose-600 to-rose-700 text-white rounded-3xl p-6 sm:p-7 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
@@ -178,7 +373,7 @@ export default function PhotographerCustomerDetail() {
                   <h3 className="font-black text-lg">Milestone Payment Overdue</h3>
                 </div>
                 <p className="text-xs text-rose-100 mt-1 max-w-xl leading-relaxed">
-                  The payment due date has passed without payment or screenshot proof. Identify unreceived payments easily and notify {customer?.name || 'the client'} to submit payment proof.
+                  The payment due date has passed without payment or screenshot proof. Notify {customer?.name || 'the client'} to submit payment proof.
                 </p>
               </div>
             </div>
@@ -195,13 +390,6 @@ export default function PhotographerCustomerDetail() {
           </div>
         )}
 
-        {reminderSent && (
-          <div className="p-4 bg-emerald-50 text-emerald-800 rounded-2xl text-xs font-bold border border-emerald-200 flex items-center gap-2.5 shadow-xs">
-            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>Automated payment reminder with direct PaySnap checkout link dispatched to {customer?.phone || 'client'} & {customer?.email || 'email'}!</span>
-          </div>
-        )}
-
         {/* Customer Information Card */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4 pb-6 border-b border-gray-100">
@@ -214,28 +402,31 @@ export default function PhotographerCustomerDetail() {
                   <h1 className="text-xl sm:text-2xl font-black text-gray-900">
                     {customer?.name || 'Customer'}
                   </h1>
-                  {isBookingOverdue ? (
-                    <StatusBadge status="action_required" />
-                  ) : (
-                    <StatusBadge status={booking.status} />
-                  )}
+                  <StatusBadge status={isPendingApproval ? 'pending_approval' : isBookingOverdue ? 'action_required' : booking.status} />
                 </div>
                 <p className="text-xs text-gray-500 mt-1 flex items-center flex-wrap gap-2">
-                  <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-gray-400" /> {customer?.phone || 'Not provided'}</span>
+                  <span className="flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-gray-400" /> {customer?.phone || '9988776655'}
+                  </span>
                   <span>·</span>
-                  <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5 text-gray-400" /> {customer?.email || 'Not provided'}</span>
+                  <span className="flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-gray-400" /> {customer?.email || 'customer@email.com'}
+                  </span>
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 mt-0.5">
                   Booking ID: <strong className="font-mono text-gray-800">#{booking.id}</strong>
                 </p>
               </div>
             </div>
 
             <div className="text-left sm:text-right">
-              <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Locked Deal Price</span>
-              <span className="text-2xl font-black text-rose-600">{formatINR(booking.deal_price)}</span>
+              <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">
+                Locked Deal Price
+              </span>
+              <span className="text-2xl font-black text-rose-600">{formatINR(dealPrice)}</span>
               <div className="text-xs text-gray-600 mt-0.5">
-                Paid: <strong className="text-emerald-600">{formatINR(totalPaid)}</strong> · Remaining: <strong>{formatINR(remainingBalance)}</strong>
+                Paid: <strong className="text-emerald-600">{formatINR(totalPaid)}</strong> · Remaining:{' '}
+                <strong>{formatINR(remainingBalance)}</strong>
               </div>
             </div>
           </div>
@@ -251,483 +442,373 @@ export default function PhotographerCustomerDetail() {
             </div>
             <div>
               <span className="text-gray-400 block font-bold uppercase text-[10px]">Non-refundable Fee</span>
-              <span className="font-extrabold text-gray-800 text-sm">{formatINR(booking.booking_fee)}</span>
+              <span className="font-extrabold text-emerald-600 text-sm">{formatINR(booking.booking_fee)} (Locked)</span>
             </div>
           </div>
         </div>
 
-        {/* Milestone Schedule & Customization */}
+        {/* =========================================================================
+            MILESTONE SCHEDULE CUSTOMIZER (MOVED FROM CUSTOMER TO PHOTOGRAPHER PROFILE)
+           ========================================================================= */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-gray-900">
-                  Milestone Payment Schedule ({phases.length} Phases)
-                </h2>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                  Customizable
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-600">
+                  Photographer Milestone Manager
                 </span>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-1">
+                  Customize Milestone Schedule ({phasesList.length} Phases)
+                </h2>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  The total package price is locked at <strong className="text-rose-600">{formatINR(dealPrice)}</strong>. Customize the number of phases, due dates, and amount for each phase.
+                </p>
               </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAddPhase}
+                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" /> Add Phase
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveSchedule}
+                  className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" /> Save Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Presets for Phase Count */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+            <span className="text-xs font-extrabold text-gray-700 flex items-center gap-1.5">
+              <Sliders className="w-4 h-4 text-rose-600" />
+              Quick Milestone Presets:
+            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => applyPresetPhases(2)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  phasesList.length === 2
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                2 Phases (50 / 50)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPresetPhases(3)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  phasesList.length === 3
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                3 Phases (30 / 40 / 30)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyPresetPhases(4)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  phasesList.length === 4
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                4 Phases (25 / 25 / 25 / 25)
+              </button>
+            </div>
+          </div>
+
+          {/* Locked Deal Summary Banner */}
+          <div className="p-4 bg-rose-50/80 rounded-2xl border border-rose-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-bold uppercase text-rose-800 tracking-wider">
+                Locked Deal Price
+              </span>
+              <p className="text-2xl font-black text-rose-950">{formatINR(dealPrice)}</p>
+            </div>
+            <div className="text-left sm:text-right text-xs text-rose-900 font-medium">
+              <span className="font-extrabold text-sm block">Wedding Photography Deal</span>
+              <span>Event: {booking.event_date} · {booking.venue}</span>
+            </div>
+          </div>
+
+          {/* Allocation Health Bar */}
+          <div
+            className={`p-3.5 rounded-2xl border text-xs flex items-center justify-between font-bold ${
+              phaseDifference === 0
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                : 'bg-amber-50 border-amber-300 text-amber-900'
+            }`}
+          >
+            <span>
+              Total Scheduled: <strong>{formatINR(totalPhasesAmount)}</strong> of {formatINR(dealPrice)}
+            </span>
+            {phaseDifference === 0 ? (
+              <span className="flex items-center gap-1 text-emerald-700">
+                <Check className="w-4 h-4" /> Perfectly Balanced
+              </span>
+            ) : phaseDifference > 0 ? (
+              <span className="text-amber-800">
+                ⚠ ₹{phaseDifference.toLocaleString('en-IN')} remaining to allocate
+              </span>
+            ) : (
+              <span className="text-red-700">
+                ⚠ ₹{Math.abs(phaseDifference).toLocaleString('en-IN')} over budget!
+              </span>
+            )}
+          </div>
+
+          {/* Customizable Phases List */}
+          <div className="space-y-4">
+            {phasesList.map((p, idx) => {
+              const isApproved = p.status === 'approved';
+              const isSubmitted = p.status === 'submitted';
+              const isOverdue = isPhaseOverdue(p);
+
+              return (
+                <div
+                  key={p.id || idx}
+                  className={`p-5 rounded-2xl border-2 transition ${
+                    isApproved
+                      ? 'border-emerald-200 bg-emerald-50/30'
+                      : isSubmitted
+                      ? 'border-amber-300 bg-amber-50/40'
+                      : isOverdue
+                      ? 'border-red-300 bg-red-50/30'
+                      : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 text-xs font-black flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <span className="text-xs font-extrabold text-gray-800 uppercase tracking-wider">
+                        Milestone {idx + 1} {idx === 0 && '(Booking Advance)'}
+                      </span>
+                      <StatusBadge status={isOverdue ? 'action_required' : p.status} />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* View Proof Button if proof exists */}
+                      {(p.proof_screenshot_url || (idx === 0 && booking.booking_fee_screenshot)) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewScreenshot(
+                              p.proof_screenshot_url || booking.booking_fee_screenshot
+                            )
+                          }
+                          className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-lg text-xs font-bold transition flex items-center gap-1"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> View Proof
+                        </button>
+                      )}
+
+                      {/* Approve Proof button if submitted */}
+                      {isSubmitted && (
+                        <button
+                          type="button"
+                          onClick={() => handleApprovePhase(p.id)}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs"
+                        >
+                          <Check className="w-3.5 h-3.5" /> Approve Payment
+                        </button>
+                      )}
+
+                      {/* Trash/delete phase (if more than 1 phase) */}
+                      {phasesList.length > 1 && !isApproved && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhase(idx)}
+                          className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition"
+                          title="Remove Phase"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Input Fields for Title, Amount, Date */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div className="sm:col-span-6">
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                        Milestone Title
+                      </label>
+                      <input
+                        type="text"
+                        value={p.name}
+                        onChange={(e) => handleUpdatePhase(idx, 'name', e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:outline-hidden focus:border-rose-500"
+                        placeholder="e.g. Phase 2: Pre-Event Payment"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                        Amount (₹)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={p.amount}
+                        onChange={(e) => handleUpdatePhase(idx, 'amount', e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:outline-hidden focus:border-rose-500"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-3">
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                        Payment Due Date
+                      </label>
+                      <input
+                        type="date"
+                        value={p.due_date}
+                        onChange={(e) => handleUpdatePhase(idx, 'due_date', e.target.value)}
+                        className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 focus:outline-hidden focus:border-rose-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom Customizer Buttons */}
+          <div className="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={handleAddPhase}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-rose-600" />
+              Add Another Phase
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveSchedule}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              Save & Lock Milestone Schedule
+            </button>
+          </div>
+        </div>
+
+        {/* Section: Upload & Photo Release Controls */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="text-lg font-black text-gray-900">
+                Photo Upload & Delivery Control
+              </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                Customize number of phases, due dates, and amount for every milestone. Overdue phases are flagged with Action Required.
+                Upload full gallery. Watermarked previews unlocked upon Phase 1; full HD zip downloads unlock when Phase 3 is approved.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() => {
-                // Pre-fill remaining amount if unallocated
-                setNewPhaseForm({
-                  name: `Phase ${phases.length + 1}: Custom Milestone`,
-                  amount: allocationDifference > 0 ? allocationDifference.toString() : '10000',
-                  due_date: '2026-12-20',
-                });
-                setShowAddPhaseModal(true);
-              }}
-              className="flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
+              onClick={handleMockUpload}
+              className="px-4 py-2 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Add Milestone Phase
+              <Cloud className="w-4 h-4" />
+              Upload Photos (+150 Raw)
             </button>
-          </div>
-
-          {/* Allocation Health Bar */}
-          <div className={`p-4 rounded-2xl border text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-            allocationDifference === 0
-              ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
-              : 'bg-amber-50/70 border-amber-200 text-amber-900'
-          }`}>
-            <div>
-              <span className="font-extrabold uppercase text-[10px] tracking-wider block">
-                Deal Allocation Status
-              </span>
-              <p className="mt-0.5 font-medium">
-                Total Deal Price: <strong>{formatINR(booking.deal_price)}</strong> · Scheduled in {phases.length} Phases: <strong>{formatINR(totalScheduled)}</strong>
-              </p>
-            </div>
-            <div>
-              {allocationDifference === 0 ? (
-                <span className="px-3 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5 text-emerald-600" /> 100% Fully Allocated
-                </span>
-              ) : allocationDifference > 0 ? (
-                <span className="px-3 py-1 rounded-lg bg-amber-100 text-amber-900 font-bold text-[11px]">
-                  ₹{allocationDifference.toLocaleString('en-IN')} unallocated balance
-                </span>
-              ) : (
-                <span className="px-3 py-1 rounded-lg bg-red-100 text-red-900 font-bold text-[11px]">
-                  ₹{Math.abs(allocationDifference).toLocaleString('en-IN')} overallocated
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Phase Cards List */}
-          <div className="space-y-4">
-            {phases.map((phase) => {
-              const isApproved = phase.status === 'approved';
-              const isSubmitted = phase.status === 'submitted';
-              const isOverdue = isPhaseOverdue(phase);
-              const isEditing = editingPhaseId === phase.id;
-
-              return (
-                <div
-                  key={phase.id}
-                  className={`p-5 rounded-2xl border transition ${
-                    isOverdue
-                      ? 'border-red-300 bg-red-50/20 ring-2 ring-red-200'
-                      : isApproved
-                      ? 'border-emerald-200 bg-emerald-50/20'
-                      : isSubmitted
-                      ? 'border-amber-300 bg-amber-50/30 ring-2 ring-amber-200'
-                      : 'border-gray-200 bg-white'
-                  }`}
-                >
-                  {isEditing ? (
-                    /* Inline Phase Editor */
-                    <form onSubmit={handleSavePhaseEdit} className="space-y-3">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-bold text-rose-600 uppercase">
-                          Editing Phase {phase.phase_number}
-                        </span>
-                        <span className="text-[11px] text-gray-400">Edits update milestone date & amount</span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Phase Title</label>
-                          <input
-                            type="text"
-                            required
-                            value={editForm.name}
-                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-semibold focus:outline-hidden focus:border-rose-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Amount (₹)</label>
-                          <input
-                            type="number"
-                            required
-                            min="1"
-                            value={editForm.amount}
-                            onChange={(e) => setEditForm({ ...editForm, amount: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-semibold focus:outline-hidden focus:border-rose-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Due Date</label>
-                          <input
-                            type="date"
-                            required
-                            value={editForm.due_date}
-                            onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
-                            className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs font-semibold focus:outline-hidden focus:border-rose-500"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex gap-2 justify-end pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setEditingPhaseId(null)}
-                          className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-lg cursor-pointer shadow-xs"
-                        >
-                          Save Changes
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    /* Display Mode */
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${
-                            isOverdue
-                              ? 'bg-red-600 text-white shadow-xs'
-                              : isApproved
-                              ? 'bg-emerald-600 text-white'
-                              : isSubmitted
-                              ? 'bg-amber-400 text-amber-950'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}
-                        >
-                          {isOverdue ? (
-                            <AlertCircle className="w-5 h-5 text-white" />
-                          ) : isApproved ? (
-                            <Check className="w-4 h-4 mx-auto" />
-                          ) : (
-                            phase.phase_number
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-extrabold text-sm text-gray-900">{phase.name}</h4>
-                            {isOverdue ? (
-                              <StatusBadge status="action_required" />
-                            ) : (
-                              <StatusBadge status={phase.status} />
-                            )}
-                            {isApproved && (
-                              <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded">
-                                Payment verified
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            Amount: <strong className="text-gray-900">{formatINR(phase.amount)}</strong> · Due Date: <span className={isOverdue ? 'text-red-600 font-bold' : ''}>{phase.due_date}</span> {phase.paid_date && `· Paid on ${phase.paid_date}`}
-                          </p>
-
-                          {isOverdue && (
-                            <p className="text-[11px] text-red-600 font-bold mt-1 flex items-center gap-1">
-                              <AlertCircle className="w-3.5 h-3.5" /> Due date has passed without payment or proof submission
-                            </p>
-                          )}
-
-                          {/* Edit History Log */}
-                          {phase.edit_history && phase.edit_history.length > 0 && (
-                            <div className="mt-1 text-[10px] text-gray-400 flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-gray-400" />
-                              <span>Last modified: {phase.edit_history[phase.edit_history.length - 1].timestamp.slice(0, 16).replace('T', ' ')}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Right Actions: Proof, Approve, Reject, Edit, Delete */}
-                      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-                        {/* Proof screenshot preview */}
-                        {phase.proof_screenshot_url && (
-                          <button
-                            type="button"
-                            onClick={() => setPreviewScreenshot(phase.proof_screenshot_url)}
-                            className="px-2.5 py-1.5 rounded-lg border border-gray-300 text-[11px] font-bold text-gray-700 hover:bg-gray-50 cursor-pointer flex items-center gap-1.5"
-                          >
-                            <FileText className="w-3.5 h-3.5" /> View Proof
-                          </button>
-                        )}
-
-                        {/* Submitted actions: Approve or Reject */}
-                        {isSubmitted && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => handleApprove(phase.id)}
-                              className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition cursor-pointer flex items-center gap-1.5"
-                            >
-                              <Check className="w-3.5 h-3.5" /> Approve Payment
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRejectModalPhaseId(phase.id)}
-                              className="px-3 py-1.5 rounded-xl border border-red-300 text-red-600 hover:bg-red-50 font-bold text-xs transition cursor-pointer"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-
-                        {/* Edit Phase Button */}
-                        {!isApproved && (
-                          <button
-                            type="button"
-                            onClick={() => startEditPhase(phase)}
-                            className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 cursor-pointer"
-                            title="Edit Phase Schedule"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                        )}
-
-                        {/* Delete Phase Button (allowed if not approved and more than 1 phase exists) */}
-                        {!isApproved && phases.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePhase(phase.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 cursor-pointer"
-                            title="Remove Phase"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Customer Photos & 10 Previews Selection */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-4 border-b border-gray-100">
-            <div>
-              <h2 className="text-lg font-black text-gray-900">
-                Customer Event Photos & Preview Selection
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Upload photos and choose which 10 photos appear in the client's watermarked preview gallery.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5">
-                <Folder className="w-3.5 h-3.5 text-gray-600" /> {photoCount} Photos in Cloud
-              </span>
-            </div>
-          </div>
-
-          {/* Upload Area Mock */}
-          <div
-            onClick={handleMockUpload}
-            className="border-2 border-dashed border-rose-300 rounded-3xl p-8 text-center bg-[#fdf8f3]/60 hover:bg-rose-50/50 transition cursor-pointer group"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-              <Cloud className="w-6 h-6" />
-            </div>
-            <h3 className="font-extrabold text-sm text-gray-900">
-              Click to Upload Event Raw & Edited Photos (Demo)
-            </h3>
-            <p className="text-xs text-gray-500 mt-1">
-              Supports high-resolution JPG, PNG, and CR3 / ARW raw formats.
-            </p>
-            <span className="inline-block mt-3 px-4 py-1.5 bg-rose-600 text-white font-bold text-xs rounded-xl shadow-xs">
-              + Simulate Uploading 150 Photos
-            </span>
           </div>
 
           {uploadToast && (
             <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200 flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-600" />
-              <span>Successfully synced 150 wedding photos to encrypted storage!</span>
+              <span>150 high-res photos processed and encrypted to cloud storage! Total uploaded: {photoCount}</span>
             </div>
           )}
 
-          {/* 10 Selected Previews Selection Grid */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-gray-800">
-                10 Demo Previews Selected ({selectedPreviews.length}/10 selected)
-              </h3>
-              <span className="text-[11px] text-gray-500">
-                Watermark overlay "PREVIEW · {photographer?.shop_name}" will be automatically applied for customer.
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {previewPhotos.map((img, idx) => {
-                const isSelected = selectedPreviews.includes(idx);
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => togglePreviewSelection(idx)}
-                    className={`relative h-32 rounded-2xl overflow-hidden cursor-pointer border-2 transition ${
-                      isSelected ? 'border-rose-600 ring-2 ring-rose-200' : 'border-gray-200 opacity-60'
-                    }`}
-                  >
-                    <img src={img} alt={`Preview pick ${idx + 1}`} className="w-full h-full object-cover" />
-                    <div className="absolute top-1.5 left-1.5">
-                      <span className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold ${
-                        isSelected ? 'bg-rose-600 text-white' : 'bg-white/80 text-gray-600'
-                      }`}>
-                        {isSelected ? <Check className="w-3.5 h-3.5" /> : ''}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 rounded font-bold">
-                      #{idx + 1}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Photo Preview Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            {previewPhotos.slice(0, 6).map((url, i) => (
+              <div key={i} className="aspect-square rounded-xl overflow-hidden relative group border border-gray-200">
+                <img
+                  src={url}
+                  alt={`Shot ${i + 1}`}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                  <span className="text-[10px] text-white font-bold bg-black/60 px-2 py-1 rounded">
+                    Photo #{i + 1}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </main>
 
-      {/* Add Custom Phase Modal */}
-      {showAddPhaseModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <h3 className="text-lg font-bold text-gray-900">Add Milestone Phase</h3>
-              <button
-                type="button"
-                onClick={() => setShowAddPhaseModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm font-bold"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="text-xs text-gray-500">
-              Create a custom payment phase with a specific due date and agreed amount.
-            </p>
-            <form onSubmit={handleAddCustomPhase} className="space-y-4 pt-1">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Phase Title / Milestone Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Raw Footage Handover, Drone Edit Release"
-                  value={newPhaseForm.name}
-                  onChange={(e) => setNewPhaseForm({ ...newPhaseForm, name: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 font-semibold focus:outline-hidden focus:border-rose-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Amount (₹)</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  placeholder="Amount in INR"
-                  value={newPhaseForm.amount}
-                  onChange={(e) => setNewPhaseForm({ ...newPhaseForm, amount: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 font-semibold focus:outline-hidden focus:border-rose-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Payment Due Date</label>
-                <input
-                  type="date"
-                  required
-                  value={newPhaseForm.due_date}
-                  onChange={(e) => setNewPhaseForm({ ...newPhaseForm, due_date: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 font-semibold focus:outline-hidden focus:border-rose-500"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-rose-600 text-white font-bold text-xs rounded-xl hover:bg-rose-700 cursor-pointer shadow-xs"
-                >
-                  Create Phase
-                </button>
+        {/* Screenshot Viewer Modal */}
+        {previewScreenshot && (
+          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+            <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100 space-y-4 p-6">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+                    Payment Screenshot
+                  </span>
+                  <h3 className="text-base font-extrabold text-gray-900 mt-1">
+                    {customer?.name} · Payment Verification
+                  </h3>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setShowAddPhaseModal(false)}
-                  className="px-4 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200 cursor-pointer"
+                  onClick={() => setPreviewScreenshot(null)}
+                  className="p-1 rounded-full text-gray-400 hover:text-gray-700 bg-gray-100 transition"
                 >
-                  Cancel
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      {/* Proof Screenshot Lightbox */}
-      {previewScreenshot && (
-        <div
-          onClick={() => setPreviewScreenshot(null)}
-          className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 cursor-pointer"
-        >
-          <div className="bg-white rounded-3xl p-4 max-w-sm w-full">
-            <h4 className="text-xs font-bold text-gray-800 mb-2">Customer Payment Screenshot</h4>
-            <img src={previewScreenshot} alt="Payment receipt" className="w-full rounded-2xl object-cover mb-3" />
-            <p className="text-[11px] text-gray-500 text-center">Click anywhere to close preview</p>
-          </div>
-        </div>
-      )}
+              <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-100 max-h-[400px] flex items-center justify-center">
+                <img
+                  src={previewScreenshot}
+                  alt="Payment Receipt"
+                  className="w-full h-auto max-h-[400px] object-contain"
+                />
+              </div>
 
-      {/* Reject Reason Modal */}
-      {rejectModalPhaseId && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Reject Payment Proof</h3>
-            <p className="text-xs text-gray-500">
-              Provide a reason to notify the customer why the payment could not be validated.
-            </p>
-            <textarea
-              rows={3}
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="w-full p-3 rounded-xl border border-gray-300 text-xs font-medium focus:outline-hidden focus:border-rose-500"
-            ></textarea>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={handleReject}
-                className="flex-1 py-2.5 bg-red-600 text-white font-bold text-xs rounded-xl hover:bg-red-700 cursor-pointer"
-              >
-                Confirm Rejection
-              </button>
-              <button
-                onClick={() => setRejectModalPhaseId(null)}
-                className="px-4 py-2.5 bg-gray-100 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200 cursor-pointer"
-              >
-                Cancel
-              </button>
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPreviewScreenshot(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition"
+                >
+                  Close Preview
+                </button>
+                {isPendingApproval && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleApproveThisBooking();
+                      setPreviewScreenshot(null);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold shadow-md transition flex items-center justify-center gap-1.5"
+                  >
+                    <Check className="w-4 h-4" /> Approve Booking Now
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
     </div>
   );
 }

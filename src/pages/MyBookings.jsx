@@ -20,7 +20,7 @@ export default function MyBookings() {
   const customerId = currentUser?.id || 'c1';
   const customerBookings = getBookingsForCustomer(customerId);
 
-  const activeBookings = customerBookings.filter((b) => b.status === 'active');
+  const activeBookings = customerBookings.filter((b) => b.status === 'active' || b.status === 'pending_approval');
   const pastBookings = customerBookings.filter((b) => b.status === 'completed' || b.status === 'cancelled');
 
   const displayedBookings = activeTab === 'active' ? activeBookings : pastBookings;
@@ -89,7 +89,9 @@ export default function MyBookings() {
               const approvedCount = phases.filter((p) => p.status === 'approved').length;
               let phaseBadgeStatus = 'pending';
 
-              if (isOverdue) {
+              if (b.status === 'pending_approval') {
+                phaseBadgeStatus = 'pending_approval';
+              } else if (isOverdue) {
                 phaseBadgeStatus = 'action_required';
               } else if (b.status === 'cancelled') {
                 phaseBadgeStatus = 'cancelled';

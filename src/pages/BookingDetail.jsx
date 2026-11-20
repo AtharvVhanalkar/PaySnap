@@ -149,6 +149,19 @@ export default function BookingDetail() {
             </div>
           </div>
 
+          {/* Pending Approval Notice */}
+          {booking.status === 'pending_approval' && (
+            <div className="mt-4 p-4 bg-purple-50 rounded-2xl border border-purple-200 text-xs text-purple-900 flex items-start gap-3">
+              <Shield className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="block font-bold">Booking Request Pending Studio Approval</strong>
+                <p className="mt-0.5 text-purple-700">
+                  Your non-refundable booking fee of {formatINR(booking.booking_fee)} and payment screenshot have been submitted. {photographer?.shop_name} will review your screenshot and confirm your booking.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Cancellation Alert if Cancelled */}
           {booking.status === 'cancelled' && (
             <div className="mt-4 p-4 bg-red-50 rounded-2xl border border-red-200 text-xs text-red-900 flex items-start gap-3">

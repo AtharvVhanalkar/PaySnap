@@ -166,6 +166,23 @@ export const customers = [
 
 export const bookings = [
   {
+    id: 'b4',
+    customer_id: 'c1',
+    photographer_id: 'p1',
+    event_date: '2027-01-20',
+    venue: 'JW Marriott, Senapati Bapat Road, Pune',
+    package_id: 'pkg2',
+    deal_price: 40000,
+    booking_fee: 5000,
+    status: 'pending_approval',
+    booking_fee_screenshot: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800',
+    commitment_agreed: true,
+    cancellation_status: null,
+    refund_amount: 0,
+    total_photos_uploaded: 0,
+    created_at: '2026-11-20',
+  },
+  {
     id: 'b1',
     customer_id: 'c1',
     photographer_id: 'p1',
@@ -213,6 +230,18 @@ export const bookings = [
 ];
 
 export const paymentPhases = [
+  {
+    id: 'pp4_1',
+    booking_id: 'b4',
+    phase_number: 1,
+    name: 'Booking Fee (Non-Refundable)',
+    amount: 5000,
+    due_date: '2026-11-20',
+    paid_date: '2026-11-20',
+    status: 'submitted',
+    proof_screenshot_url: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800',
+    edit_history: [],
+  },
   {
     id: 'pp1',
     booking_id: 'b1',
