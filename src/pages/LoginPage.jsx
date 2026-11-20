@@ -136,39 +136,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Top Primary Switcher: Client Portal vs Studio Portal */}
-          <div className="grid grid-cols-2 gap-2 p-1.5 bg-gray-100 rounded-2xl mb-6 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => {
-                setIsStudio(false);
-                setSearchParams({});
-              }}
-              className={`py-2 rounded-xl transition cursor-pointer ${
-                !isStudio
-                  ? 'bg-white text-gray-900 shadow-xs'
-                  : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Sign In as Client
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsStudio(true);
-                setStudioMode('signin');
-                setSearchParams({ tab: 'photographer' });
-              }}
-              className={`py-2 rounded-xl transition cursor-pointer ${
-                isStudio
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Join as Studio
-            </button>
-          </div>
-
           {/* ========================================================= */}
           {/* CLIENT PORTAL: SIGN IN AS CLIENT & CREATE ACCOUNT BELOW */}
           {/* ========================================================= */}
